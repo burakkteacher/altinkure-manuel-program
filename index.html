@@ -193,17 +193,32 @@ async function fetchFirstJson(candidates) {
   const list = Array.isArray(candidates) ? candidates : [candidates];
   let lastErr = null;
 
+  // GitHub Pages fallback: bazı cihazlarda Türkçe karakterli dosya adları / relative fetch sorun çıkarabiliyor.
+  // Bu yüzden önce aynı origin'den dener; olmazsa raw.githubusercontent.com üzerinden dener.
+  const owner = (location.hostname || "").split(".")[0]; // burakkteacher
+  const repo = (location.pathname.split("/").filter(Boolean)[0]) || ""; // altinkure-manuel-program
+  const rawBase = (owner && repo) ? `https://raw.githubusercontent.com/${owner}/${repo}/main/` : null;
+
   for (const rel of list) {
-    try {
-      const res = await fetch(resolveRelUrl(rel), { cache: "no-store" });
-      if (!res.ok) throw new Error(`${rel} fetch failed: ${res.status}`);
-      return await res.json();
-    } catch (e) {
-      lastErr = e;
+    const tryUrls = [];
+    // 1) Same-origin relative
+    tryUrls.push(resolveRelUrl(rel));
+    // 2) Raw fallback
+    if (rawBase) tryUrls.push(rawBase + encodeURIComponent(rel));
+
+    for (const url of tryUrls) {
+      try {
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) throw new Error(`${rel} fetch failed: ${res.status}`);
+        return await res.json();
+      } catch (e) {
+        lastErr = e;
+      }
     }
   }
   throw lastErr || new Error("JSON fetch failed");
 }
+
 
     function initDays(){
       const box = el("days");
