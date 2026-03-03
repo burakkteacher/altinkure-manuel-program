@@ -26,7 +26,7 @@
     button.ghost{background:transparent}
     .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:12px}
     .tiny{font-size:11px;color:var(--muted)}
-    .days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+    .days{display:grid;grid-template-columns:repeat(auto-fit,minmax(74px,1fr));gap:8px}
     .daychk{display:flex;align-items:center;gap:6px;padding:8px;border:1px solid var(--line);border-radius:10px;background:#0b1630}
     .split{display:flex;gap:8px;align-items:center}
     .split > *{flex:1}
@@ -48,7 +48,15 @@
     .note b{display:block;margin-bottom:6px}
     .rightcol{display:grid;grid-template-columns:1fr;gap:14px}
     .badge{display:inline-block;padding:3px 8px;border-radius:999px;border:1px solid var(--line);font-size:11px;color:var(--muted)}
-  </style>
+  
+
+/* Plan tablosu satır yüksekliklerini dengeler */
+table { table-layout: fixed; }
+tbody tr { height: 76px; }
+td { vertical-align: middle; }
+td select { width: 100%; }
+
+</style>
 </head>
 <body>
   <div class="wrap">
@@ -93,7 +101,15 @@
               <option value="2">2</option>
               <option value="3">3</option>
             </select>
+          <div class="hint" style="margin-top:10px">Soru hedefi (opsiyonel)</div>
+          <input id="manualQ" type="number" min="0" placeholder="örn. 50" style="margin-top:6px"/>
+
           </div>
+      <div class="field">
+        <label>Manuel soru notu (opsiyonel)</label>
+        <textarea id="manualQNote" rows="2" placeholder="Örn: Matematik: 120 • Türkçe: 80 (serbest metin)"></textarea>
+      </div>
+
           <div>
             <label>Aktif günler</label>
             <div class="days" id="days"></div>
@@ -180,10 +196,27 @@
 
     function el(id){ return document.getElementById(id); }
 
-    function safeFetchJson(url){
-      return fetch(url, {cache:"no-store"})
-        .then(r => { if(!r.ok) throw new Error(url+" yüklenemedi"); return r.json(); });
+    function resolveRelUrl(rel) {
+  // GitHub Pages altında /repo-adi/ ile çalışırken mutlak path (/...) bozulur.
+  // Bu yüzden her zaman mevcut sayfanın bulunduğu klasöre göre çözüyoruz.
+  return new URL(rel, window.location.href).toString();
+}
+
+async function fetchFirstJson(candidates) {
+  const list = Array.isArray(candidates) ? candidates : [candidates];
+  let lastErr = null;
+
+  for (const rel of list) {
+    try {
+      const res = await fetch(resolveRelUrl(rel), { cache: "no-store" });
+      if (!res.ok) throw new Error(`${rel} fetch failed: ${res.status}`);
+      return await res.json();
+    } catch (e) {
+      lastErr = e;
     }
+  }
+  throw lastErr || new Error("JSON fetch failed");
+}
 
     function initDays(){
       const box = el("days");
@@ -217,27 +250,56 @@
       sec.innerHTML = uniq.map(s=>`<option value="${s}">${grade}-${s}</option>`).join("");
     }
 
+    
     function fillStudentOptions(){
-      const grade = el("grade").value;
-      const section = el("section").value;
-      const key = grade + "-" + section;
-      const st = (STUDENTS.classes && STUDENTS.classes[key]) ? STUDENTS.classes[key] : [];
+      const gradeKey = el("grade").value;
+      const classKey = el("section").value;
+      const key = `${gradeKey}::${classKey}`;
+      const list = (STUDENTS && STUDENTS.classes && STUDENTS.classes[key]) ? STUDENTS.classes[key] : [];
+
       const sel = el("student");
-      sel.innerHTML = st.map(x=>`<option value="${x.num}">${key} • ${x.num} • ${x.name}</option>`).join("");
-      if(st.length===0){
-        sel.innerHTML = `<option value="">(Öğrenci bulunamadı)</option>`;
-      }
+      sel.innerHTML = "";
+      const opt0 = document.createElement("option");
+      opt0.value = "";
+      opt0.textContent = "Öğrenci seç";
+      sel.appendChild(opt0);
+
+      list.forEach((x, idx)=>{
+        const num = (x.num ?? x.no ?? x.number ?? x.Numara ?? x["Numara"] ?? x["No"] ?? "").toString().trim();
+        const name = (x.name ?? x.adi ?? x.Ad ?? x["Adı"] ?? x["Adi"] ?? "").toString().trim();
+        const opt = document.createElement("option");
+        opt.value = String(idx);
+        const numTxt = (!num || String(num).toLowerCase()==="undefined" || String(num).toLowerCase()==="nan") ? "-" : num;
+        opt.textContent = `${classKey} • ${numTxt} • ${name || "-"}`;
+        sel.appendChild(opt);
+      });
+
+      // reset selection
+      sel.value = "";
+      
     }
 
+
+    
     function getStudentInfo(){
-      const grade = el("grade").value;
-      const section = el("section").value;
-      const key = grade + "-" + section;
-      const num = el("student").value;
-      const st = (STUDENTS.classes && STUDENTS.classes[key]) ? STUDENTS.classes[key] : [];
-      const found = st.find(x=>String(x.num)===String(num));
-      return {grade, section, key, num, name: found ? found.name : ""};
+      const gradeKey = el("grade").value;
+      const classKey = el("section").value;
+      const key = `${gradeKey}::${classKey}`;
+      const list = (STUDENTS && STUDENTS.classes && STUDENTS.classes[key]) ? STUDENTS.classes[key] : [];
+      const idx = parseInt(el("student").value,10);
+      const s = Number.isFinite(idx) ? list[idx] : null;
+
+      const num = s ? (s.num ?? s.no ?? s.number ?? s.Numara ?? s["Numara"] ?? s["No"] ?? "") : "";
+      const name = s ? (s.name ?? s.adi ?? s.Ad ?? s["Adı"] ?? s["Adi"] ?? "") : "";
+
+      return {
+        gradeKey,
+        classKey,
+        num: (num||"").toString().trim(),
+        name: (name||"").toString().trim()
+      };
     }
+
 
     function fillSubjectOptions(){
       const grade = el("grade").value;
@@ -412,132 +474,241 @@
     }
 
     // ---- Excel Export
+    
     async function exportExcel(){
-      if(typeof ExcelJS === "undefined"){
-        alert("ExcelJS yüklenemedi. İnternet bağlantısını kontrol edin.");
-        return;
-      }
-      const st = getStudentInfo();
-      const dateText = getDateText();
+      if(!STUDENTS || !OUTCOMES){ toast("Önce veriler yüklensin (students.json, kazanimlar.json).","warn"); return; }
 
-      const wb = new ExcelJS.Workbook();
-      wb.creator = "Altınküre • Manuel Sistem";
-      const ws = wb.addWorksheet("Program", {properties:{defaultRowHeight:20}});
-
-      ws.pageSetup = {orientation:"landscape", fitToPage:true, fitToWidth:1, fitToHeight:1, paperSize:9};
-
-      // columns
-      const totalCols = 10;
-      ws.columns = Array.from({length:totalCols}, (_,i)=>({width: i===0?14: 18}));
-
-      // Header rows
-      ws.mergeCells(1,1,1,totalCols);
-      ws.getCell(1,1).value = "ALTINKÜRE ORTAOKULU";
-      ws.getCell(1,1).font = {bold:true, size:16, color:{argb:"FFFFFFFF"}};
-      ws.getCell(1,1).alignment = {horizontal:"center", vertical:"middle"};
-      ws.getCell(1,1).fill = {type:"pattern", pattern:"solid", fgColor:{argb:"FF0F2747"}};
-      ws.getRow(1).height = 26;
-
-      ws.mergeCells(2,1,2,7);
-      ws.mergeCells(2,8,2,totalCols);
-      ws.getCell(2,1).value = `Öğrenci Bazlı Haftalık Çalışma Programı | ${st.key} • No: ${st.num} • ${st.name}`.trim();
-      ws.getCell(2,8).value = dateText ? `Tarih: ${dateText}` : "";
-      ws.getCell(2,1).font = {bold:true, size:12, color:{argb:"FFFFFFFF"}};
-      ws.getCell(2,8).font = {bold:true, size:12, color:{argb:"FFFFFFFF"}};
-      ws.getCell(2,1).alignment = {horizontal:"left", vertical:"middle"};
-      ws.getCell(2,8).alignment = {horizontal:"right", vertical:"middle"};
-      for(let c=1;c<=totalCols;c++){
-        ws.getCell(2,c).fill = {type:"pattern", pattern:"solid", fgColor:{argb:"FF0F2747"}};
-      }
-      ws.getRow(2).height = 22;
-
-      // Table header
       const perDay = parseInt(el("perDay").value,10);
-      const actDays = getActiveDays();
-      const startRow = 4;
+      const activeDays = getActiveDays(); // ['Pazartesi',...]
+      if(activeDays.length===0){ toast("En az 1 aktif gün seç.","warn"); return; }
 
-      const headers = ["Gün", ...Array.from({length:perDay},(_,i)=>`${i+1}. Ders`)];
-      // map to columns: A..?
-      for(let i=0;i<headers.length;i++){
-        const cell = ws.getCell(startRow, 1+i);
-        cell.value = headers[i];
-        cell.font = {bold:true, color:{argb:"FF9FB0D0"}};
-        cell.alignment = {horizontal:"center", vertical:"middle", wrapText:true};
-        cell.fill = {type:"pattern", pattern:"solid", fgColor:{argb:"FF0F1A2E"}};
-        cell.border = thickBorder();
-      }
-      ws.getRow(startRow).height = 22;
+      const st = getStudentInfo();
+      if(!st || !st.classKey || !st.name){ toast("Önce öğrenci seç.","warn"); return; }
+      const manualQ = parseInt((el("manualQ")?.value || "").trim(), 10);
+      const manualQText = (Number.isFinite(manualQ) && manualQ > 0) ? ` Soru hedefi: ${manualQ}.` : "";
 
-      // Rows
-      const idToItem = new Map(Array.from(selected.values()).map(it=>[String(it.id), it]));
-      for(let r=0;r<actDays.length;r++){
-        const dayIdx = actDays[r];
-        const row = startRow + 1 + r;
-        ws.getCell(row,1).value = DAYS[dayIdx];
-        ws.getCell(row,1).font = {bold:true};
-        ws.getCell(row,1).alignment = {horizontal:"left", vertical:"middle"};
-        ws.getCell(row,1).border = thickBorder();
-        ws.getCell(row,1).fill = {type:"pattern", pattern:"solid", fgColor:{argb:"FF0B1630"}};
 
-        const slots = plan[dayIdx] || Array(perDay).fill("");
-        for(let s=0;s<perDay;s++){
-          const col = 2+s;
-          const id = String(slots[s]||"");
-          const it = idToItem.get(id);
-          const text = it ? `${it.subject}${it.unit? " • "+it.unit:""}\n${it.text}` : "";
-          const cell = ws.getCell(row,col);
-          cell.value = text;
-          cell.alignment = {horizontal:"left", vertical:"top", wrapText:true};
-          cell.border = thickBorder();
-          if(it){
-            const color = SUBJECT_COLORS[it.subject] || SUBJECT_COLORS.default;
-            cell.fill = {type:"pattern", pattern:"solid", fgColor:{argb:color}};
-            cell.font = {bold:true, color:{argb:"FFFFFFFF"}, size:11};
-          } else {
-            cell.fill = {type:"pattern", pattern:"solid", fgColor:{argb:"FF071027"}};
-            cell.font = {color:{argb:"FFEEF3FF"}, size:11};
+      const slots = activeDays.length * perDay;
+      if(plan.length !== slots){ rebuildPlanGrid(); }
+
+      // plan id -> item (OUTCOMES'dan)
+      const gradeKey = st.gradeKey;
+      const byId = new Map();
+      const gradeObj = (OUTCOMES.grades && OUTCOMES.grades[gradeKey]) ? OUTCOMES.grades[gradeKey] : {};
+      Object.keys(gradeObj).forEach(subj=>{
+        (gradeObj[subj]||[]).forEach(it=> byId.set(it.id, {subj, ...it}));
+      });
+      const planItems = plan.map(id => (id && byId.get(id)) ? byId.get(id) : null);
+
+      // ---------- Premium Excel Template ----------
+      const wb = new ExcelJS.Workbook();
+      wb.creator = "Altınküre";
+      wb.created = new Date();
+      const ws = wb.addWorksheet("Program");
+
+      ws.pageSetup = {
+        paperSize: 9, // A4
+        orientation: "landscape",
+        fitToPage: true,
+        fitToWidth: 1,
+        fitToHeight: 1,
+        horizontalCentered: true,
+        verticalCentered: false,
+        margins: { left:0.25, right:0.25, top:0.35, bottom:0.35, header:0.15, footer:0.15 }
+      };
+
+      const DARK = "0B1B2B";
+      const WHITE = "FFFFFF";
+
+      const SUBJECT_META = {
+        "Matematik":      { code:"MAT", fill:"DDEBFF" },
+        "Türkçe":        { code:"TR",  fill:"FDE3D1" },
+        "Fen Bilimleri":  { code:"FEN", fill:"DFF5E1" },
+        "Sosyal Bilgiler":{ code:"SOS", fill:"E6E0FF" },
+        "T.C. İnkılap Tarihi ve Atatürkçülük": { code:"İNK", fill:"E6E0FF" },
+        "Din Kültürü":    { code:"DİN", fill:"DFF5F1" },
+        "İngilizce":      { code:"ENG", fill:"F7D9FF" },
+      };
+
+      const DAY_LABELS = ["Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi","Pazar"];
+
+      const cols2 = [
+        { width:14 }, // A Gün
+        { width:30 }, // B 1.Ders
+        { width:6  }, // C Soru
+        { width:30 }, // D 2.Ders
+        { width:6  }, // E Soru
+      ];
+      const cols3 = cols2.concat([
+        { width:30 }, // F 3.Ders
+        { width:6  }, // G Soru
+      ]);
+      ws.columns = (perDay===3 ? cols3 : cols2);
+
+      function fill(cell, hex){ cell.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF"+hex.replace("#","")}}; }
+      function font(cell, opts){ cell.font = Object.assign({name:"Arial", size:11}, (opts||{})); }
+      function center(cell){ cell.alignment = {vertical:"middle", horizontal:"center", wrapText:true}; }
+      function vleft(cell){ cell.alignment = {vertical:"middle", horizontal:"left", wrapText:true}; }
+      function setBorder(r1,c1,r2,c2){
+        for(let r=r1; r<=r2; r++){
+          for(let c=c1; c<=c2; c++){
+            const cell = ws.getCell(r,c);
+            cell.border = {
+              top:{style:"thin",color:{argb:"FF233142"}},
+              left:{style:"thin",color:{argb:"FF233142"}},
+              bottom:{style:"thin",color:{argb:"FF233142"}},
+              right:{style:"thin",color:{argb:"FF233142"}},
+            };
           }
-          ws.getRow(row).height = 58;
         }
       }
 
-      // Note box (always)
-      const noteRow = startRow + 1 + actDays.length + 1;
-      const noteColStart = perDay===3 ? 5 : 4; // keep it on the right
-      const noteColEnd = Math.min(totalCols, noteColStart + 3);
-      ws.mergeCells(noteRow, noteColStart, noteRow+2, noteColEnd);
-      const noteCell = ws.getCell(noteRow, noteColStart);
-      noteCell.value = "Ödevleri aksatmayacak şekilde, seçtiğiniz bu kazanımlara çalışıyorsun. Soru çözerek konuları pekiştiriyorsun.";
-      noteCell.alignment = {horizontal:"left", vertical:"top", wrapText:true};
-      noteCell.font = {bold:true, italic:false, color:{argb:"FF0B1220"}};
-      noteCell.fill = {type:"pattern", pattern:"solid", fgColor:{argb:"FFF1D48A"}};
-      noteCell.border = thickBorder();
+      const lastColLetter = (perDay===3) ? "G" : "E";
+      const lastColIdx = (perDay===3) ? 7 : 5;
 
-      // Signature line
-      const sigRow = noteRow + 4;
-      ws.mergeCells(sigRow, 1, sigRow, 5);
-      ws.mergeCells(sigRow, 6, sigRow, totalCols);
-      ws.getCell(sigRow,1).value = "Öğrenci İmza:";
-      ws.getCell(sigRow,6).value = "Veli İmza:";
-      ws.getCell(sigRow,1).border = thinBorder();
-      ws.getCell(sigRow,6).border = thinBorder();
-      ws.getCell(sigRow,1).font = {bold:true};
-      ws.getCell(sigRow,6).font = {bold:true};
+      // Row 1
+      ws.mergeCells(`A1:${lastColLetter}1`);
+      ws.getRow(1).height = 22;
+      ws.getCell("A1").value = "ALTINKÜRE ORTAOKULU";
+      fill(ws.getCell("A1"), DARK);
+      font(ws.getCell("A1"), {bold:true, color:{argb:"FF"+WHITE}, size:13});
+      ws.getCell("A1").alignment = {vertical:"middle", horizontal:"left"};
 
-      // Try logo (optional)
-      try{
-        const logoUrl = new URL("logo.png", window.location.href).toString();
-        const b64 = await fetchAsDataURL(logoUrl);
-        if(b64){
-          const imageId = wb.addImage({base64: b64.split(",")[1], extension:"png"});
-          ws.addImage(imageId, {tl:{col:0.2,row:0.15}, ext:{width:110,height:45}});
+      // Row 2
+      ws.mergeCells(`A2:${lastColLetter}2`);
+      ws.getRow(2).height = 18;
+      ws.getCell("A2").value = `Öğrenci Bazlı Haftalık Çalışma Programı | ${st.classKey} • No: ${st.num||""} • ${st.name}`;
+      fill(ws.getCell("A2"), DARK);
+      font(ws.getCell("A2"), {bold:true, color:{argb:"FF"+WHITE}, size:10});
+      ws.getCell("A2").alignment = {vertical:"middle", horizontal:"left"};
+
+      ws.getRow(3).height = 6;
+
+      // Header row 4
+      ws.getRow(4).height = 20;
+      ws.getCell("A4").value = "Gün";
+      ws.getCell("B4").value = "1. Ders";
+      ws.getCell("C4").value = "Soru";
+      ws.getCell("D4").value = "2. Ders";
+      ws.getCell("E4").value = "Soru";
+      if(perDay===3){
+        ws.getCell("F4").value = "3. Ders (ops.)";
+        ws.getCell("G4").value = "Soru";
+      }
+      const hdrCells = ["A4","B4","C4","D4","E4"].concat(perDay===3?["F4","G4"]:[]);
+      hdrCells.forEach(addr=>{
+        fill(ws.getCell(addr), DARK);
+        font(ws.getCell(addr), {bold:true, color:{argb:"FF"+WHITE}, size:10});
+        center(ws.getCell(addr));
+      });
+
+      // Day rows 5-11
+      const startRow = 5;
+      for(let i=0;i<DAY_LABELS.length;i++){
+        const dayName = DAY_LABELS[i];
+        const r = startRow + i;
+        ws.getRow(r).height = 34;
+
+        ws.getCell(`A${r}`).value = dayName;
+        fill(ws.getCell(`A${r}`), DARK);
+        font(ws.getCell(`A${r}`), {bold:true, color:{argb:"FF"+WHITE}, size:10});
+        center(ws.getCell(`A${r}`));
+
+        const isActive = activeDays.includes(i);
+        const dayIndex = activeDays.indexOf(i); // -1 if not active
+
+        for(let k=0;k<perDay;k++){
+          const col = (k===0?"B":k===1?"D":"F");
+          const qcol = (k===0?"C":k===1?"E":"G");
+          const cell = ws.getCell(`${col}${r}`);
+          const qcell = ws.getCell(`${qcol}${r}`);
+
+          if(!isActive){
+            cell.value = "";
+            qcell.value = "";
+            fill(cell, "F2F4F7");
+            fill(qcell,"F2F4F7");
+            vleft(cell);
+            center(qcell);
+            continue;
+          }
+
+          const item = planItems[dayIndex*perDay + k] || null;
+          if(!item){
+            cell.value = "";
+            qcell.value = "";
+            fill(cell, "FFFFFF");
+            fill(qcell,"FFFFFF");
+            vleft(cell);
+            center(qcell);
+            continue;
+          }
+
+          const meta = SUBJECT_META[item.subj] || {code:item.subj.slice(0,3).toUpperCase(), fill:"FFFFFF"};
+          const title = `${meta.code} • ${item.subj}`;
+          const topic = (item.text||"").toString().trim();
+          cell.value = title + "\n" + topic;
+
+          fill(cell, meta.fill);
+          font(cell, {bold:true, size:10, color:{argb:"FF111827"}});
+          vleft(cell);
+
+          qcell.value = "";
+          fill(qcell, "FFF7CC");
+          font(qcell, {bold:true, size:10, color:{argb:"FF111827"}});
+          center(qcell);
         }
-      }catch(e){ /* ignore */ }
+      }
 
+      const tableLastRow = startRow + 6;
+      setBorder(4,1,tableLastRow,lastColIdx);
+
+      // Uyarı bandı (her programda sabit)
+      const uRow = tableLastRow + 2; // 13
+      ws.getRow(uRow).height = 18;
+      ws.mergeCells(`A${uRow}:${lastColLetter}${uRow}`);
+      ws.getCell(`A${uRow}`).value = "Uyarı: Ödevleri aksatmayacak şekilde, seçtiğin kazanımlara çalışıyorsun. Soru çözerek konuları pekiştiriyorsun.";
+      fill(ws.getCell(`A${uRow}`), "FAD2D2");
+      font(ws.getCell(`A${uRow}`), {italic:true, color:{argb:"FF7A0000"}, bold:true, size:10});
+      ws.getCell(`A${uRow}`).alignment = {vertical:"middle", horizontal:"left", wrapText:true};
+      setBorder(uRow,1,uRow,lastColIdx);
+
+      // Ek not (soru hedefi / manuel not)
+      const extraNote = [manualQText, manualQNote ? ("Not: " + manualQNote) : ""].filter(Boolean).join("\n");
+      if(extraNote){
+        const nRow = uRow + 1;
+        ws.getRow(nRow).height = 34;
+        ws.mergeCells(`A${nRow}:${lastColLetter}${nRow}`);
+        ws.getCell(`A${nRow}`).value = extraNote;
+        fill(ws.getCell(`A${nRow}`), "FFF2CC");
+        font(ws.getCell(`A${nRow}`), {size:10});
+        ws.getCell(`A${nRow}`).alignment = {vertical:"top", horizontal:"left", wrapText:true};
+        setBorder(nRow,1,nRow,lastColIdx);
+      }
+
+      // İmza satırı
+      const sRow = uRow + 2; // 15
+      ws.getRow(sRow).height = 18;
+      const midColLetter = (perDay===3) ? "D" : "C";
+      ws.mergeCells(`A${sRow}:${midColLetter}${sRow}`);
+      ws.mergeCells(`${String.fromCharCode(midColLetter.charCodeAt(0)+1)}${sRow}:${lastColLetter}${sRow}`);
+      ws.getCell(`A${sRow}`).value = "Öğrenci imza:";
+      ws.getCell(`${String.fromCharCode(midColLetter.charCodeAt(0)+1)}${sRow}`).value = "Veli imza:";
+      font(ws.getCell(`A${sRow}`), {bold:true, size:10});
+      font(ws.getCell(`${String.fromCharCode(midColLetter.charCodeAt(0)+1)}${sRow}`), {bold:true, size:10});
+      ws.getCell(`A${sRow}`).alignment = {vertical:"middle", horizontal:"left"};
+      ws.getCell(`${String.fromCharCode(midColLetter.charCodeAt(0)+1)}${sRow}`).alignment = {vertical:"middle", horizontal:"left"};
+      setBorder(sRow,1,sRow,lastColIdx);
+
+      // Download
       const buf = await wb.xlsx.writeBuffer();
-      const fname = `Program_${st.key}_${st.num || "ogrenci"}.xlsx`;
-      saveAs(new Blob([buf], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}), fname);
+      const safeName = (st.name||"ogrenci").replace(/[^\w\s\-ĞÜŞİÖÇğüşıöç]/g,"").trim().replace(/\s+/g,"_");
+      const safeNum = (st.num||"").toString().trim();
+      const filename = `Program_${st.classKey.replace(/\s+/g,"")}_${safeNum || "No"}_${safeName}.xlsx`;
+      saveAs(new Blob([buf], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}), filename);
+      toast("Excel indirildi.","ok");
     }
+
 
     function thickBorder(){
       const s = {style:"thick", color:{argb:"FF1F3158"}};
@@ -635,8 +806,8 @@
       fillGradeOptions();
 
       // load jsons from repo root
-      STUDENTS = await safeFetchJson("students.json");
-      OUTCOMES = await safeFetchJson("kazanimlar.json");
+      STUDENTS = await fetchFirstJson(["students.json"]);
+      OUTCOMES = await fetchFirstJson(["kazanimlar.json","kazanımlar.json","kazanımlar.json"]);
 
       fillSectionOptions();
       fillStudentOptions();
@@ -649,7 +820,7 @@
 
     boot().catch(err=>{
       console.error(err);
-      alert("Gerekli dosyalar yüklenemedi.\n\nKontrol: students.json ve kazanimlar.json repo kök dizininde olmalı.");
+      alert("Gerekli dosyalar yüklenemedi.\n\nKontrol: students.json ve kazanimlar.json (veya kazanımlar.json) repo kök dizininde olmalı.");
     });
   </script>
 </body>
