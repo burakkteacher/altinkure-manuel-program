@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Altınküre • Manuel Kazanım Programı</title>
+  <style>
+    :root{
+      --bg:#0b1220; --card:#0f1a2e; --muted:#9fb0d0; --text:#eef3ff;
+      --line:#1f3158; --accent:#d7b35a; --accent2:#2c6cff;
+      --ok:#25d366; --warn:#ffcc00;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#070d19, #0b1220);color:var(--text)}
+    .wrap{max-width:1200px;margin:0 auto;padding:16px}
+    h1{margin:0 0 10px;font-size:18px;font-weight:800;letter-spacing:.2px}
+    .grid{display:grid;grid-template-columns:360px 1fr;gap:14px}
+    .card{background:rgba(15,26,46,.92);border:1px solid var(--line);border-radius:14px;padding:12px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    label{display:block;font-size:12px;color:var(--muted);margin:8px 0 6px}
+    select,input,textarea,button{width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);background:#0b1630;color:var(--text);outline:none}
+    textarea{min-height:92px;resize:vertical}
+    button{cursor:pointer;font-weight:700}
+    button.primary{background:linear-gradient(90deg,var(--accent2),#5aa2ff);border:none}
+    button.gold{background:linear-gradient(90deg,var(--accent),#f1d48a);border:none;color:#111}
+    button.ghost{background:transparent}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:12px}
+    .tiny{font-size:11px;color:var(--muted)}
+    .days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+    .daychk{display:flex;align-items:center;gap:6px;padding:8px;border:1px solid var(--line);border-radius:10px;background:#0b1630}
+    .split{display:flex;gap:8px;align-items:center}
+    .split > *{flex:1}
+    .list{max-height:340px;overflow:auto;border:1px solid var(--line);border-radius:12px;background:#091126}
+    .item{display:flex;gap:10px;align-items:flex-start;padding:10px;border-bottom:1px solid rgba(31,49,88,.6)}
+    .item:last-child{border-bottom:none}
+    .chk{margin-top:4px}
+    .itag{min-width:56px;text-align:center;font-size:11px;padding:4px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+    .itxt{font-size:13px;line-height:1.25}
+    .itxt b{color:#fff}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap}
+    .toolbar button{width:auto;padding:10px 12px}
+    .plan{overflow:auto;border:1px solid var(--line);border-radius:14px;background:#091126}
+    table{border-collapse:collapse;width:100%}
+    th,td{border:2px solid #1f3158;padding:10px;vertical-align:top}
+    th{background:#0f1a2e;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+    td select{background:#071027;border:1px solid #233a6a}
+    .note{border:2px solid #2a4277;border-radius:14px;padding:12px;background:linear-gradient(180deg, rgba(215,179,90,.08), rgba(44,108,255,.06));}
+    .note b{display:block;margin-bottom:6px}
+    .rightcol{display:grid;grid-template-columns:1fr;gap:14px}
+    .badge{display:inline-block;padding:3px 8px;border-radius:999px;border:1px solid var(--line);font-size:11px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Altınküre • Manuel Kazanım Programı (Bağımsız Sistem)</h1>
+    <div class="grid">
+      <!-- LEFT -->
+      <div class="card">
+        <div class="row">
+          <div>
+            <label>Sınıf</label>
+            <select id="grade"></select>
+          </div>
+          <div>
+            <label>Şube</label>
+            <select id="section"></select>
+          </div>
+        </div>
+
+        <label>Öğrenci</label>
+        <select id="student"></select>
+        <div class="tiny">Öğrenci listesi: <span class="badge">students.json</span> dosyasından okunur.</div>
+
+        <div class="row">
+          <div>
+            <label>Tarih</label>
+            <select id="dateMode">
+              <option value="none">Yok</option>
+              <option value="today">Bugün</option>
+              <option value="manual">Seç</option>
+            </select>
+          </div>
+          <div>
+            <label>Tarih Seç</label>
+            <input id="dateInput" type="date" disabled/>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Günde kaç ders?</label>
+            <select id="perDay">
+              <option value="2">2</option>
+              <option value="3">3</option>
+            </select>
+          </div>
+          <div>
+            <label>Aktif günler</label>
+            <div class="days" id="days"></div>
+          </div>
+        </div>
+
+        <hr style="border:0;border-top:1px solid var(--line);margin:12px 0">
+
+        <div class="row">
+          <div>
+            <label>Ders filtresi</label>
+            <select id="subject"></select>
+          </div>
+          <div>
+            <label>Ünite filtresi</label>
+            <select id="unit"></select>
+          </div>
+        </div>
+
+        <label>Arama</label>
+        <input id="q" placeholder="Kazanım/konu içinde ara..."/>
+
+        <div class="toolbar" style="margin:10px 0 8px">
+          <button class="ghost" id="selAll">Hepsini seç</button>
+          <button class="ghost" id="clrAll">Seçimi temizle</button>
+          <button class="ghost" id="autoFill">Seçileni sırayla yerleştir</button>
+        </div>
+
+        <div class="list" id="outList"></div>
+
+        <div style="margin-top:12px" class="toolbar">
+          <button class="primary" id="downloadXlsx">Excel indir</button>
+        </div>
+        <div class="tiny" style="margin-top:8px">
+          Not: Bu sürüm analiz yüklemez. Öğretmen manuel seçer ve günlere yerleştirir.
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div class="rightcol">
+        <div class="card">
+          <div class="split">
+            <div class="pill"><span>Seçili kazanım:</span> <b id="selCount">0</b></div>
+            <div class="pill"><span>Plan slot:</span> <b id="slotCount">0</b></div>
+          </div>
+          <div style="height:10px"></div>
+          <div class="plan">
+            <table id="planTable"></table>
+          </div>
+        </div>
+
+        <div class="card note">
+          <b>Bilgilendirme</b>
+          <div>Ödevleri aksatmayacak şekilde, seçtiğiniz bu kazanımlara çalışıyorsunuz. Soru çözerek konuları pekiştiriyorsunuz.</div>
+          <div class="tiny" style="margin-top:8px">“SINAVZA tarafından yapılan analizle öncelikli konu listesine göre kişiye özel hazırlanmıştır.” metni bu sürümde opsiyonel değildir; manuel sistemdir.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- libs -->
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
+  <script>
+    // ---- CONFIG
+    const DAYS = ["Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi","Pazar"];
+    const SUBJECT_COLORS = {
+      "Matematik":"FF2C6CFF",
+      "Türkçe":"FFFFB020",
+      "Fen Bilimleri":"FF25D366",
+      "Sosyal Bilgiler":"FF9B59B6",
+      "İnkılap Tarihi":"FF9B59B6",
+      "Din Kültürü":"FF00BFA6",
+      "İngilizce":"FFFF5AA2",
+      "default":"FF1F3158"
+    };
+
+    // ---- STATE
+    let STUDENTS = null;   // students.json
+    let OUTCOMES = null;   // kazanımlar.json
+    let selected = new Map(); // id -> {id,text,unit,subject,grade}
+    let plan = {}; // dayIndex -> array of ids (len perDay)
+
+    function el(id){ return document.getElementById(id); }
+
+    function safeFetchJson(url){
+      return fetch(url, {cache:"no-store"})
+        .then(r => { if(!r.ok) throw new Error(url+" yüklenemedi"); return r.json(); });
+    }
+
+    function initDays(){
+      const box = el("days");
+      box.innerHTML="";
+      DAYS.forEach((d,i)=>{
+        const wrap = document.createElement("label");
+        wrap.className="daychk";
+        wrap.innerHTML = `<input type="checkbox" data-day="${i}" checked> <span style="font-size:12px">${d.slice(0,3)}</span>`;
+        box.appendChild(wrap);
+      });
+    }
+
+    function getActiveDays(){
+      const checks = el("days").querySelectorAll("input[type=checkbox]");
+      const act = [];
+      checks.forEach(c => { if(c.checked) act.push(parseInt(c.dataset.day,10)); });
+      return act;
+    }
+
+    function fillGradeOptions(){
+      const g = el("grade");
+      g.innerHTML = ["5","6","7","8"].map(v=>`<option value="${v}">${v}. Sınıf</option>`).join("");
+    }
+
+    function fillSectionOptions(){
+      const grade = el("grade").value;
+      const sec = el("section");
+      const keys = Object.keys(STUDENTS.classes || {});
+      const sections = keys.filter(k=>k.startsWith(grade+"-")).map(k=>k.split("-")[1]);
+      const uniq = [...new Set(sections)].sort();
+      sec.innerHTML = uniq.map(s=>`<option value="${s}">${grade}-${s}</option>`).join("");
+    }
+
+    function fillStudentOptions(){
+      const grade = el("grade").value;
+      const section = el("section").value;
+      const key = grade + "-" + section;
+      const st = (STUDENTS.classes && STUDENTS.classes[key]) ? STUDENTS.classes[key] : [];
+      const sel = el("student");
+      sel.innerHTML = st.map(x=>`<option value="${x.num}">${key} • ${x.num} • ${x.name}</option>`).join("");
+      if(st.length===0){
+        sel.innerHTML = `<option value="">(Öğrenci bulunamadı)</option>`;
+      }
+    }
+
+    function getStudentInfo(){
+      const grade = el("grade").value;
+      const section = el("section").value;
+      const key = grade + "-" + section;
+      const num = el("student").value;
+      const st = (STUDENTS.classes && STUDENTS.classes[key]) ? STUDENTS.classes[key] : [];
+      const found = st.find(x=>String(x.num)===String(num));
+      return {grade, section, key, num, name: found ? found.name : ""};
+    }
+
+    function fillSubjectOptions(){
+      const grade = el("grade").value;
+      const subjSel = el("subject");
+      const gradeObj = OUTCOMES.grades[grade] || {};
+      const subjects = Object.keys(gradeObj).sort((a,b)=>a.localeCompare(b,"tr"));
+      subjSel.innerHTML = `<option value="__all__">Tümü</option>` + subjects.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("");
+    }
+
+    function fillUnitOptions(){
+      const grade = el("grade").value;
+      const subj = el("subject").value;
+      const unitSel = el("unit");
+      const gradeObj = OUTCOMES.grades[grade] || {};
+      let items = [];
+      if(subj==="__all__"){
+        Object.values(gradeObj).forEach(arr => items.push(...arr));
+      } else {
+        items = gradeObj[subj] || [];
+      }
+      const units = [...new Set(items.map(x=>x.unit||"").filter(Boolean))].sort((a,b)=>a.localeCompare(b,"tr"));
+      unitSel.innerHTML = `<option value="__all__">Tümü</option>` + units.map(u=>`<option value="${escapeHtml(u)}">${escapeHtml(u)}</option>`).join("");
+    }
+
+    function escapeHtml(s){
+      return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+    }
+
+    function renderOutcomeList(){
+      const grade = el("grade").value;
+      const subj = el("subject").value;
+      const unit = el("unit").value;
+      const q = (el("q").value || "").trim().toLocaleLowerCase("tr-TR");
+
+      const gradeObj = OUTCOMES.grades[grade] || {};
+      let pool = [];
+      if(subj==="__all__"){
+        Object.entries(gradeObj).forEach(([s,arr]) => {
+          arr.forEach(it => pool.push({...it, subject:s, grade}));
+        });
+      } else {
+        (gradeObj[subj]||[]).forEach(it => pool.push({...it, subject:subj, grade}));
+      }
+
+      if(unit !== "__all__"){
+        pool = pool.filter(it => (it.unit||"") === unit);
+      }
+      if(q){
+        pool = pool.filter(it => (it.text||"").toLocaleLowerCase("tr-TR").includes(q) || (it.unit||"").toLocaleLowerCase("tr-TR").includes(q));
+      }
+
+      const out = el("outList");
+      out.innerHTML="";
+      pool.slice(0,2000).forEach(it=>{
+        const row = document.createElement("div");
+        row.className="item";
+        const checked = selected.has(it.id) ? "checked" : "";
+        row.innerHTML = `
+          <input class="chk" type="checkbox" data-id="${escapeHtml(it.id)}" ${checked}>
+          <div class="itag">${escapeHtml(it.subject)}</div>
+          <div class="itxt"><b>${escapeHtml(it.unit || "")}</b><div>${escapeHtml(it.text)}</div></div>
+        `;
+        out.appendChild(row);
+      });
+
+      out.querySelectorAll("input[type=checkbox]").forEach(ch=>{
+        ch.addEventListener("change", ()=>{
+          const id = ch.dataset.id;
+          const item = pool.find(x=>String(x.id)===String(id));
+          if(!item) return;
+          if(ch.checked){
+            selected.set(item.id, item);
+          } else {
+            selected.delete(item.id);
+            // also remove from plan slots if present
+            for(const k of Object.keys(plan)){
+              plan[k] = plan[k].map(v => v===item.id ? "" : v);
+            }
+          }
+          updateCounts();
+          renderPlanTable();
+        });
+      });
+
+      updateCounts();
+    }
+
+    function updateCounts(){
+      el("selCount").textContent = String(selected.size);
+      const perDay = parseInt(el("perDay").value,10);
+      const actDays = getActiveDays();
+      el("slotCount").textContent = String(actDays.length * perDay);
+    }
+
+    function renderPlanTable(){
+      const perDay = parseInt(el("perDay").value,10);
+      const actDays = getActiveDays();
+      // init plan
+      actDays.forEach(i=>{
+        if(!plan[i] || plan[i].length !== perDay) plan[i] = Array(perDay).fill("");
+      });
+      // remove non-active days
+      Object.keys(plan).forEach(k=>{
+        if(!actDays.includes(parseInt(k,10))) delete plan[k];
+      });
+
+      const tbl = el("planTable");
+      const headers = ["Gün", ...Array.from({length:perDay},(_,i)=>`${i+1}. Ders`)];
+      tbl.innerHTML = `
+        <thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead>
+        <tbody></tbody>
+      `;
+      const body = tbl.querySelector("tbody");
+      const options = buildPlanOptions();
+
+      actDays.forEach(dayIdx=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td><b>${DAYS[dayIdx]}</b></td>` + plan[dayIdx].map((val,slotIdx)=>{
+          return `<td><select data-day="${dayIdx}" data-slot="${slotIdx}">${options(val)}</select></td>`;
+        }).join("");
+        body.appendChild(tr);
+      });
+
+      body.querySelectorAll("select").forEach(s=>{
+        s.addEventListener("change", ()=>{
+          const d = parseInt(s.dataset.day,10);
+          const sl = parseInt(s.dataset.slot,10);
+          plan[d][sl] = s.value;
+        });
+      });
+    }
+
+    function buildPlanOptions(){
+      const items = Array.from(selected.values());
+      // group by subject
+      items.sort((a,b)=> (a.subject||"").localeCompare(b.subject||"tr") || (a.unit||"").localeCompare(b.unit||"tr") || (a.text||"").localeCompare(b.text||"tr"));
+      const groups = {};
+      items.forEach(it=>{
+        if(!groups[it.subject]) groups[it.subject]=[];
+        groups[it.subject].push(it);
+      });
+      return (current)=>{
+        let html = `<option value="">(Boş)</option>`;
+        Object.keys(groups).sort((a,b)=>a.localeCompare(b,"tr")).forEach(subj=>{
+          html += `<optgroup label="${escapeHtml(subj)}">`;
+          groups[subj].forEach(it=>{
+            const label = `${it.unit ? it.unit+" — " : ""}${it.text}`;
+            const sel = String(current)===String(it.id) ? "selected" : "";
+            html += `<option value="${escapeHtml(it.id)}" ${sel}>${escapeHtml(label)}</option>`;
+          });
+          html += `</optgroup>`;
+        });
+        return html;
+      };
+    }
+
+    function autoFillSequential(){
+      const perDay = parseInt(el("perDay").value,10);
+      const actDays = getActiveDays();
+      const items = Array.from(selected.values());
+      items.sort((a,b)=> (a.subject||"").localeCompare(b.subject||"tr") || (a.unit||"").localeCompare(b.unit||"tr") || (a.text||"").localeCompare(b.text||"tr"));
+
+      let idx = 0;
+      actDays.forEach(d=>{
+        if(!plan[d] || plan[d].length!==perDay) plan[d] = Array(perDay).fill("");
+        for(let s=0;s<perDay;s++){
+          if(idx < items.length) plan[d][s] = items[idx++].id;
+          else plan[d][s] = "";
+        }
+      });
+      renderPlanTable();
+    }
+
+    // ---- Excel Export
+    async function exportExcel(){
+      if(typeof ExcelJS === "undefined"){
+        alert("ExcelJS yüklenemedi. İnternet bağlantısını kontrol edin.");
+        return;
+      }
+      const st = getStudentInfo();
+      const dateText = getDateText();
+
+      const wb = new ExcelJS.Workbook();
+      wb.creator = "Altınküre • Manuel Sistem";
+      const ws = wb.addWorksheet("Program", {properties:{defaultRowHeight:20}});
+
+      ws.pageSetup = {orientation:"landscape", fitToPage:true, fitToWidth:1, fitToHeight:1, paperSize:9};
+
+      // columns
+      const totalCols = 10;
+      ws.columns = Array.from({length:totalCols}, (_,i)=>({width: i===0?14: 18}));
+
+      // Header rows
+      ws.mergeCells(1,1,1,totalCols);
+      ws.getCell(1,1).value = "ALTINKÜRE ORTAOKULU";
+      ws.getCell(1,1).font = {bold:true, size:16, color:{argb:"FFFFFFFF"}};
+      ws.getCell(1,1).alignment = {horizontal:"center", vertical:"middle"};
+      ws.getCell(1,1).fill = {type:"pattern", pattern:"solid", fgColor:{argb:"FF0F2747"}};
+      ws.getRow(1).height = 26;
+
+      ws.mergeCells(2,1,2,7);
+      ws.mergeCells(2,8,2,totalCols);
+      ws.getCell(2,1).value = `Öğrenci Bazlı Haftalık Çalışma Programı | ${st.key} • No: ${st.num} • ${st.name}`.trim();
+      ws.getCell(2,8).value = dateText ? `Tarih: ${dateText}` : "";
+      ws.getCell(2,1).font = {bold:true, size:12, color:{argb:"FFFFFFFF"}};
+      ws.getCell(2,8).font = {bold:true, size:12, color:{argb:"FFFFFFFF"}};
+      ws.getCell(2,1).alignment = {horizontal:"left", vertical:"middle"};
+      ws.getCell(2,8).alignment = {horizontal:"right", vertical:"middle"};
+      for(let c=1;c<=totalCols;c++){
+        ws.getCell(2,c).fill = {type:"pattern", pattern:"solid", fgColor:{argb:"FF0F2747"}};
+      }
+      ws.getRow(2).height = 22;
+
+      // Table header
+      const perDay = parseInt(el("perDay").value,10);
+      const actDays = getActiveDays();
+      const startRow = 4;
+
+      const headers = ["Gün", ...Array.from({length:perDay},(_,i)=>`${i+1}. Ders`)];
+      // map to columns: A..?
+      for(let i=0;i<headers.length;i++){
+        const cell = ws.getCell(startRow, 1+i);
+        cell.value = headers[i];
+        cell.font = {bold:true, color:{argb:"FF9FB0D0"}};
+        cell.alignment = {horizontal:"center", vertical:"middle", wrapText:true};
+        cell.fill = {type:"pattern", pattern:"solid", fgColor:{argb:"FF0F1A2E"}};
+        cell.border = thickBorder();
+      }
+      ws.getRow(startRow).height = 22;
+
+      // Rows
+      const idToItem = new Map(Array.from(selected.values()).map(it=>[String(it.id), it]));
+      for(let r=0;r<actDays.length;r++){
+        const dayIdx = actDays[r];
+        const row = startRow + 1 + r;
+        ws.getCell(row,1).value = DAYS[dayIdx];
+        ws.getCell(row,1).font = {bold:true};
+        ws.getCell(row,1).alignment = {horizontal:"left", vertical:"middle"};
+        ws.getCell(row,1).border = thickBorder();
+        ws.getCell(row,1).fill = {type:"pattern", pattern:"solid", fgColor:{argb:"FF0B1630"}};
+
+        const slots = plan[dayIdx] || Array(perDay).fill("");
+        for(let s=0;s<perDay;s++){
+          const col = 2+s;
+          const id = String(slots[s]||"");
+          const it = idToItem.get(id);
+          const text = it ? `${it.subject}${it.unit? " • "+it.unit:""}\n${it.text}` : "";
+          const cell = ws.getCell(row,col);
+          cell.value = text;
+          cell.alignment = {horizontal:"left", vertical:"top", wrapText:true};
+          cell.border = thickBorder();
+          if(it){
+            const color = SUBJECT_COLORS[it.subject] || SUBJECT_COLORS.default;
+            cell.fill = {type:"pattern", pattern:"solid", fgColor:{argb:color}};
+            cell.font = {bold:true, color:{argb:"FFFFFFFF"}, size:11};
+          } else {
+            cell.fill = {type:"pattern", pattern:"solid", fgColor:{argb:"FF071027"}};
+            cell.font = {color:{argb:"FFEEF3FF"}, size:11};
+          }
+          ws.getRow(row).height = 58;
+        }
+      }
+
+      // Note box (always)
+      const noteRow = startRow + 1 + actDays.length + 1;
+      const noteColStart = perDay===3 ? 5 : 4; // keep it on the right
+      const noteColEnd = Math.min(totalCols, noteColStart + 3);
+      ws.mergeCells(noteRow, noteColStart, noteRow+2, noteColEnd);
+      const noteCell = ws.getCell(noteRow, noteColStart);
+      noteCell.value = "Ödevleri aksatmayacak şekilde, seçtiğiniz bu kazanımlara çalışıyorsun. Soru çözerek konuları pekiştiriyorsun.";
+      noteCell.alignment = {horizontal:"left", vertical:"top", wrapText:true};
+      noteCell.font = {bold:true, italic:false, color:{argb:"FF0B1220"}};
+      noteCell.fill = {type:"pattern", pattern:"solid", fgColor:{argb:"FFF1D48A"}};
+      noteCell.border = thickBorder();
+
+      // Signature line
+      const sigRow = noteRow + 4;
+      ws.mergeCells(sigRow, 1, sigRow, 5);
+      ws.mergeCells(sigRow, 6, sigRow, totalCols);
+      ws.getCell(sigRow,1).value = "Öğrenci İmza:";
+      ws.getCell(sigRow,6).value = "Veli İmza:";
+      ws.getCell(sigRow,1).border = thinBorder();
+      ws.getCell(sigRow,6).border = thinBorder();
+      ws.getCell(sigRow,1).font = {bold:true};
+      ws.getCell(sigRow,6).font = {bold:true};
+
+      // Try logo (optional)
+      try{
+        const logoUrl = new URL("logo.png", window.location.href).toString();
+        const b64 = await fetchAsDataURL(logoUrl);
+        if(b64){
+          const imageId = wb.addImage({base64: b64.split(",")[1], extension:"png"});
+          ws.addImage(imageId, {tl:{col:0.2,row:0.15}, ext:{width:110,height:45}});
+        }
+      }catch(e){ /* ignore */ }
+
+      const buf = await wb.xlsx.writeBuffer();
+      const fname = `Program_${st.key}_${st.num || "ogrenci"}.xlsx`;
+      saveAs(new Blob([buf], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}), fname);
+    }
+
+    function thickBorder(){
+      const s = {style:"thick", color:{argb:"FF1F3158"}};
+      return {top:s,left:s,bottom:s,right:s};
+    }
+    function thinBorder(){
+      const s = {style:"thin", color:{argb:"FF1F3158"}};
+      return {top:s,left:s,bottom:s,right:s};
+    }
+
+    function getDateText(){
+      const mode = el("dateMode").value;
+      if(mode==="none") return "";
+      if(mode==="today"){
+        const d = new Date();
+        const dd = String(d.getDate()).padStart(2,"0");
+        const mm = String(d.getMonth()+1).padStart(2,"0");
+        const yy = d.getFullYear();
+        return `${dd}.${mm}.${yy}`;
+      }
+      const v = el("dateInput").value;
+      if(!v) return "";
+      const [yy,mm,dd] = v.split("-");
+      return `${dd}.${mm}.${yy}`;
+    }
+
+    async function fetchAsDataURL(url){
+      const r = await fetch(url, {cache:"no-store"});
+      if(!r.ok) return null;
+      const blob = await r.blob();
+      return await new Promise((res)=>{
+        const fr = new FileReader();
+        fr.onload = ()=>res(fr.result);
+        fr.readAsDataURL(blob);
+      });
+    }
+
+    // ---- events
+    function hook(){
+      el("dateMode").addEventListener("change", ()=>{
+        el("dateInput").disabled = (el("dateMode").value !== "manual");
+      });
+      el("grade").addEventListener("change", ()=>{
+        fillSectionOptions();
+        fillStudentOptions();
+        fillSubjectOptions();
+        fillUnitOptions();
+        renderOutcomeList();
+        renderPlanTable();
+      });
+      el("section").addEventListener("change", ()=>{
+        fillStudentOptions();
+      });
+      el("subject").addEventListener("change", ()=>{
+        fillUnitOptions();
+        renderOutcomeList();
+      });
+      el("unit").addEventListener("change", renderOutcomeList);
+      el("q").addEventListener("input", ()=>{ debounce(renderOutcomeList, 120)(); });
+      el("perDay").addEventListener("change", ()=>{
+        updateCounts();
+        renderPlanTable();
+      });
+      el("days").addEventListener("change", ()=>{
+        updateCounts();
+        renderPlanTable();
+      });
+
+      el("selAll").addEventListener("click", ()=>{
+        // check all visible
+        el("outList").querySelectorAll("input[type=checkbox]").forEach(ch=>{
+          if(!ch.checked) ch.click();
+        });
+      });
+      el("clrAll").addEventListener("click", ()=>{
+        selected.clear();
+        plan = {};
+        renderOutcomeList();
+        renderPlanTable();
+      });
+      el("autoFill").addEventListener("click", autoFillSequential);
+      el("downloadXlsx").addEventListener("click", exportExcel);
+    }
+
+    function debounce(fn, ms){
+      let t=null;
+      return function(){
+        clearTimeout(t);
+        t=setTimeout(()=>fn(), ms);
+      }
+    }
+
+    async function boot(){
+      initDays();
+      fillGradeOptions();
+
+      // load jsons from repo root
+      STUDENTS = await safeFetchJson("students.json");
+      OUTCOMES = await safeFetchJson("kazanimlar.json");
+
+      fillSectionOptions();
+      fillStudentOptions();
+      fillSubjectOptions();
+      fillUnitOptions();
+      hook();
+      renderOutcomeList();
+      renderPlanTable();
+    }
+
+    boot().catch(err=>{
+      console.error(err);
+      alert("Gerekli dosyalar yüklenemedi.\n\nKontrol: students.json ve kazanimlar.json repo kök dizininde olmalı.");
+    });
+  </script>
+</body>
+</html>
