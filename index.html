@@ -780,8 +780,8 @@ async function fetchFirstJson(candidates) {
       fillGradeOptions();
 
       // load jsons from repo root
-      STUDENTS = await safeFetchJson("students.json");
-      OUTCOMES = await safeFetchJson("kazanimlar.json");
+      STUDENTS = await fetchFirstJson(["students.json"]);
+      OUTCOMES = await fetchFirstJson(["kazanimlar.json","kazanımlar.json","kazanımlar.json"]);
 
       fillSectionOptions();
       fillStudentOptions();
