@@ -6,8 +6,8 @@
   <title>Altınküre • Manuel Kazanım Programı</title>
   <style>
     :root{
-      --bg:#0b1220; --card:#0f1a2e; --muted:#9fb0d0; --text:#eef3ff;
-      --line:#1f3158; --accent:#d7b35a; --accent2:#2c6cff;
+      --bg:#111827; --card:#16233b; --muted:#b7c6e6; --text:#f6f8ff;
+      --line:#2a3f6b; --accent:#e3c46f; --accent2:#4b86ff;
       --ok:#25d366; --warn:#ffcc00;
     }
     *{box-sizing:border-box}
@@ -49,7 +49,16 @@
     .note b{display:block;margin-bottom:6px}
     .rightcol{display:grid;grid-template-columns:1fr;gap:14px}
     .badge{display:inline-block;padding:3px 8px;border-radius:999px;border:1px solid var(--line);font-size:11px;color:var(--muted)}
-  </style>
+  
+/* Plan hücresi: kazanım + soru */
+.cellStack{display:flex;flex-direction:column;gap:6px}
+.qrow{display:flex;gap:6px;align-items:center}
+.qrow .qCount{max-width:110px}
+.qrow .qNote{flex:1;min-width:120px}
+.qrow select, .qrow input{padding:8px;border-radius:10px}
+.plan table td{background:rgba(255,255,255,.02)}
+
+</style>
 </head>
 <body>
   <div class="wrap">
@@ -100,7 +109,7 @@
           </div>
 
           <div>
-            <label>Manuel soru notu (opsiyonel)</label>
+            <label>Öğretmen notu (opsiyonel)</label>
             <textarea id="manualQNote" rows="2" placeholder="Örn: Matematik: 120 • Türkçe: 80 (serbest metin)"></textarea>
           </div>
         </div>
@@ -171,12 +180,25 @@
   <script>
     // ---- CONFIG
     const DAYS = ["Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi","Pazar"];
+    const SUBJECT_ICONS = {
+      "Matematik":"🧮",
+      "Türkçe":"📚",
+      "Fen Bilimleri":"🔬",
+      "Sosyal Bilgiler":"🌍",
+      "İnkılap Tarihi":"🏛️",
+      "T.C. İnkılap Tarihi ve Atatürkçülük":"🏛️",
+      "Din Kültürü":"🤲",
+      "İngilizce":"🇬🇧",
+      "default":"📌"
+    };
+
 
     // ---- STATE
     let STUDENTS = null;   // students.json
     let OUTCOMES = null;   // kazanımlar.json
     let selected = new Map(); // id -> {id,text,unit,subject,grade}
-    let plan = {}; // dayIndex -> array of ids (len perDay)
+    let plan = {};
+    let planQ = {}; // dayIndex -> array of {count:"", note:""} (len perDay) // dayIndex -> array of ids (len perDay)
 
     function el(id){ return document.getElementById(id); }
 
@@ -394,7 +416,17 @@
       el("slotCount").textContent = String(actDays.length * perDay);
     }
 
-    function buildPlanOptions(){
+    
+    function buildQOptions(current){
+      let html = `<option value="">Soru</option>`;
+      for(let n=5;n<=200;n+=5){
+        const sel = String(current)===String(n) ? "selected" : "";
+        html += `<option value="${n}" ${sel}>${n}</option>`;
+      }
+      return html;
+    }
+
+function buildPlanOptions(){
       const items = Array.from(selected.values());
       items.sort((a,b)=> (a.subject||"").localeCompare(b.subject||"tr") || (a.unit||"").localeCompare(b.unit||"tr") || (a.text||"").localeCompare(b.text||"tr"));
       const groups = {};
@@ -407,7 +439,8 @@
         Object.keys(groups).sort((a,b)=>a.localeCompare(b,"tr")).forEach(subj=>{
           html += `<optgroup label="${escapeHtml(subj)}">`;
           groups[subj].forEach(it=>{
-            const label = `${it.unit ? it.unit+" — " : ""}${it.text}`;
+            const icon = SUBJECT_ICONS[it.subject] || SUBJECT_ICONS["default"];
+            const label = `${icon} ${it.unit ? it.unit+" — " : ""}${it.text}`;
             const sel = String(current)===String(it.id) ? "selected" : "";
             html += `<option value="${escapeHtml(it.id)}" ${sel}>${escapeHtml(label)}</option>`;
           });
@@ -422,9 +455,14 @@
       const actDays = getActiveDays();
       actDays.forEach(i=>{
         if(!plan[i] || plan[i].length !== perDay) plan[i] = Array(perDay).fill("");
+        if(!planQ[i] || planQ[i].length !== perDay) planQ[i] = Array.from({length:perDay}, ()=>({count:"", note:""}));
       });
       Object.keys(plan).forEach(k=>{
         if(!actDays.includes(parseInt(k,10))) delete plan[k];
+      });
+
+      Object.keys(planQ).forEach(k=>{
+        if(!actDays.includes(parseInt(k,10))) delete planQ[k];
       });
 
       const tbl = el("planTable");
@@ -439,14 +477,42 @@
       actDays.forEach(dayIdx=>{
         const tr = document.createElement("tr");
         tr.innerHTML = `<td><b>${DAYS[dayIdx]}</b></td>` + plan[dayIdx].map((val,slotIdx)=>{
-          return `<td><select data-day="${dayIdx}" data-slot="${slotIdx}">${options(val)}</select></td>`;
+          return `<td>
+            <div class="cellStack">
+              <select class="outSel" data-day="${dayIdx}" data-slot="${slotIdx}">${options(val)}</select>
+              <div class="qrow">
+                <select class="qCount" data-day="${dayIdx}" data-slot="${slotIdx}">${buildQOptions((planQ[dayIdx]&&planQ[dayIdx][slotIdx])?planQ[dayIdx][slotIdx].count:"")}</select>
+                <input class="qNote" data-day="${dayIdx}" data-slot="${slotIdx}" placeholder="Not" value="${escapeHtml((planQ[dayIdx]&&planQ[dayIdx][slotIdx])?planQ[dayIdx][slotIdx].note:"")}">
+              </div>
+            </div>
+          </td>`;
         }).join("");
         body.appendChild(tr);
       });
 
-      body.querySelectorAll("select").forEach(s=>{
+      body.querySelectorAll("select.outSel").forEach(s=>{
         s.addEventListener("change", ()=>{
           const d = parseInt(s.dataset.day,10);
+          const sl = parseInt(s.dataset.slot,10);
+          plan[d][sl] = s.value;
+        });
+      });
+      body.querySelectorAll("select.qCount").forEach(s=>{
+        s.addEventListener("change", ()=>{
+          const d = parseInt(s.dataset.day,10);
+          const sl = parseInt(s.dataset.slot,10);
+          if(!planQ[d]) planQ[d] = Array.from({length:perDay}, ()=>({count:"", note:""}));
+          planQ[d][sl].count = s.value;
+        });
+      });
+      body.querySelectorAll("input.qNote").forEach(inp=>{
+        inp.addEventListener("input", ()=>{
+          const d = parseInt(inp.dataset.day,10);
+          const sl = parseInt(inp.dataset.slot,10);
+          if(!planQ[d]) planQ[d] = Array.from({length:perDay}, ()=>({count:"", note:""}));
+          planQ[d][sl].note = inp.value;
+        });
+      });
           const sl = parseInt(s.dataset.slot,10);
           plan[d][sl] = s.value;
         });
@@ -637,7 +703,8 @@
           }
 
           const meta = SUBJECT_META[item.subj] || {code:(item.subj||"").slice(0,3).toUpperCase(), fill:"FFFFFF"};
-          const title = `${meta.code} • ${item.subj}`;
+          const icon = SUBJECT_ICONS[item.subj] || SUBJECT_ICONS["default"];
+          const title = `${icon} ${meta.code} • ${item.subj}`;
           const topic = (item.text||"").toString().trim();
           cell.value = title + "\n" + topic;
 
@@ -645,7 +712,10 @@
           font(cell, {bold:true, size:10, color:{argb:"FF111827"}});
           vleft(cell);
 
-          qcell.value = "";
+          const qInfo = (planQ && planQ[i] && planQ[i][k]) ? planQ[i][k] : null;
+          const qCount = qInfo ? (qInfo.count||"") : "";
+          const qNote = qInfo ? (qInfo.note||"") : "";
+          qcell.value = qCount ? Number(qCount) : (qNote || "");
           fill(qcell, "FFF7CC");
           font(qcell, {bold:true, size:10, color:{argb:"FF111827"}});
           center(qcell);
