@@ -1,806 +1,4 @@
 {
-  "classes": {
-    "5-A": [
-      {
-        "numara": "175",
-        "name": "ŞEVVAL SARGIN"
-      },
-      {
-        "numara": "180",
-        "name": "HASAN ZEKİ AYDIN"
-      },
-      {
-        "numara": "1021",
-        "name": "Nisanur İskender"
-      },
-      {
-        "numara": "1023",
-        "name": "Ensar Eriş"
-      },
-      {
-        "numara": "1029",
-        "name": "Alperen Kasap"
-      },
-      {
-        "numara": "1035",
-        "name": "Erdem Kurtaran"
-      },
-      {
-        "numara": "1045",
-        "name": "Şura Başak"
-      },
-      {
-        "numara": "1058",
-        "name": "Gözde Meryem Özcan"
-      },
-      {
-        "numara": "1065",
-        "name": "Ali Hamza Akgül"
-      },
-      {
-        "numara": "1083",
-        "name": "Taylan Uygun"
-      },
-      {
-        "numara": "1096",
-        "name": "Alya Karayaka"
-      },
-      {
-        "numara": "1141",
-        "name": "Musab Ali Kurt"
-      },
-      {
-        "numara": "1154",
-        "name": "Osman Asaf Sevim"
-      },
-      {
-        "numara": "1170",
-        "name": "İnci Kurt"
-      },
-      {
-        "numara": "1173",
-        "name": "Kuzey Yağız Kılıç"
-      },
-      {
-        "numara": "1218",
-        "name": "CELAL KAVAK"
-      },
-      {
-        "numara": "1219",
-        "name": "YUSUF EMİR CAN"
-      },
-      {
-        "numara": "1222",
-        "name": "MUHAMMET YUSUF SAK"
-      },
-      {
-        "numara": "1229",
-        "name": "AYBİKE DEMİRAL"
-      },
-      {
-        "numara": "1245",
-        "name": "Selim Emre Geçgil"
-      },
-      {
-        "numara": "1249",
-        "name": "BUĞLEM SU BAŞTAN"
-      }
-    ],
-    "5-B": [
-      {
-        "numara": "1043",
-        "name": "Umut Hakkı Genç"
-      },
-      {
-        "numara": "1050",
-        "name": "Ali Mert Balık"
-      },
-      {
-        "numara": "1053",
-        "name": "Ali Berkay Kurtulmuş"
-      },
-      {
-        "numara": "1054",
-        "name": "Nil Buzrul"
-      },
-      {
-        "numara": "1057",
-        "name": "Ömer Asaf Yüksel"
-      },
-      {
-        "numara": "1059",
-        "name": "Kerem Demir"
-      },
-      {
-        "numara": "1066",
-        "name": "Fatih Kağan Yavuz"
-      },
-      {
-        "numara": "1073",
-        "name": "Muhammed Ali Sümbül"
-      },
-      {
-        "numara": "1090",
-        "name": "Zührenaz Fidan"
-      },
-      {
-        "numara": "1107",
-        "name": "Ahmet Arhan Dülger"
-      },
-      {
-        "numara": "1114",
-        "name": "Zülal Serra Cicioğlu"
-      },
-      {
-        "numara": "1130",
-        "name": "Ahmed Salih Balcı"
-      },
-      {
-        "numara": "1137",
-        "name": "Ali Kerem Tosyalı"
-      },
-      {
-        "numara": "1146",
-        "name": "Hafsa Miray Çapa"
-      },
-      {
-        "numara": "1159",
-        "name": "Mustafa Deniz Tavlı"
-      },
-      {
-        "numara": "1162",
-        "name": "Emir Haktan Kovacıoğlu"
-      },
-      {
-        "numara": "1188",
-        "name": "Ali Kerem Atmaca"
-      },
-      {
-        "numara": "1228",
-        "name": "ÖYKÜ EMİNE HELVACI"
-      },
-      {
-        "numara": "1240",
-        "name": "EMİR TUNA"
-      },
-      {
-        "numara": "1243",
-        "name": "MUHAMMED ENSAR BARİK"
-      }
-    ],
-    "6-A": [
-      {
-        "numara": "182",
-        "name": "ZAHİDE ŞİFA AKSU"
-      },
-      {
-        "numara": "1014",
-        "name": "İREM YUMAT"
-      },
-      {
-        "numara": "1041",
-        "name": "Ceren Hüma Adak"
-      },
-      {
-        "numara": "1060",
-        "name": "Pınara Tusem Tufan"
-      },
-      {
-        "numara": "1061",
-        "name": "Berat Başak"
-      },
-      {
-        "numara": "1071",
-        "name": "Mehmet Emin Akbulut"
-      },
-      {
-        "numara": "1098",
-        "name": "Melike Eylül Şengül"
-      },
-      {
-        "numara": "1106",
-        "name": "Yiğit Sivri"
-      },
-      {
-        "numara": "1122",
-        "name": "İlyas Berat Kirez"
-      },
-      {
-        "numara": "1134",
-        "name": "Zeynep Azra Kar"
-      },
-      {
-        "numara": "1168",
-        "name": "Ömer Saffan Cankurt"
-      },
-      {
-        "numara": "1177",
-        "name": "Ayşe Börte Arıdil"
-      },
-      {
-        "numara": "1179",
-        "name": "HAMZA ÖZTÜRK"
-      },
-      {
-        "numara": "1181",
-        "name": "Ali Çelebi"
-      },
-      {
-        "numara": "1231",
-        "name": "KAREEM IGBARIA"
-      },
-      {
-        "numara": "1233",
-        "name": "Oğuz Şükür"
-      },
-      {
-        "numara": "1239",
-        "name": "Fatma Hüma Aydın"
-      }
-    ],
-    "6-B": [
-      {
-        "numara": "176",
-        "name": "EMİR TOÇOĞLU"
-      },
-      {
-        "numara": "1016",
-        "name": "Aras Barlık"
-      },
-      {
-        "numara": "1037",
-        "name": "Emin Mert Erciyes"
-      },
-      {
-        "numara": "1088",
-        "name": "Adnan Eren Eraslan"
-      },
-      {
-        "numara": "1102",
-        "name": "Elif Yağmur Şentürk"
-      },
-      {
-        "numara": "1105",
-        "name": "Esma Mina Ulusal"
-      },
-      {
-        "numara": "1111",
-        "name": "Melih Sait Türkyolu"
-      },
-      {
-        "numara": "1126",
-        "name": "Mehmet Akif Yıldırım"
-      },
-      {
-        "numara": "1131",
-        "name": "Defne Şensoy"
-      },
-      {
-        "numara": "1142",
-        "name": "Yaren Ayhan"
-      },
-      {
-        "numara": "1145",
-        "name": "Eymen Ayhan"
-      },
-      {
-        "numara": "1147",
-        "name": "Yakup Eymen Aydın"
-      },
-      {
-        "numara": "1148",
-        "name": "Sara Nas Çorlu"
-      },
-      {
-        "numara": "1157",
-        "name": "Elif Beyza Keleş"
-      },
-      {
-        "numara": "1242",
-        "name": "YUSUF ALİ UZUN"
-      },
-      {
-        "numara": "1246",
-        "name": "HİRA ŞEN"
-      }
-    ],
-    "7-A": [
-      {
-        "numara": "1032",
-        "name": "Erva Nur Altunbudak"
-      },
-      {
-        "numara": "1064",
-        "name": "Ravzanur Malyemez"
-      },
-      {
-        "numara": "1067",
-        "name": "Ahmed Yusuf Ateş"
-      },
-      {
-        "numara": "1074",
-        "name": "Muhammed Eymen Ayvaz"
-      },
-      {
-        "numara": "1076",
-        "name": "Sare Kanyılmaz"
-      },
-      {
-        "numara": "1078",
-        "name": "Hamza Yiğit Duman"
-      },
-      {
-        "numara": "1079",
-        "name": "Ahmet Bilal Çalışkan"
-      },
-      {
-        "numara": "1081",
-        "name": "Zümra Bade Yağmur"
-      },
-      {
-        "numara": "1084",
-        "name": "Hacer Merve Balcı"
-      },
-      {
-        "numara": "1086",
-        "name": "Selin Berk"
-      },
-      {
-        "numara": "1097",
-        "name": "Zülal Çelik"
-      },
-      {
-        "numara": "1103",
-        "name": "Yağız Ayhan Şengönül"
-      },
-      {
-        "numara": "1104",
-        "name": "Ahmet Yahya Peren"
-      },
-      {
-        "numara": "1136",
-        "name": "Kıvanç Babaoğlu"
-      },
-      {
-        "numara": "1182",
-        "name": "Reyyan Sandıkçı"
-      },
-      {
-        "numara": "1203",
-        "name": "Kerem Aslan"
-      },
-      {
-        "numara": "1205",
-        "name": "Ceyda Atış"
-      },
-      {
-        "numara": "1211",
-        "name": "Zeynep Sena Aktaş"
-      },
-      {
-        "numara": "1215",
-        "name": "Hamit Emre Özdil"
-      },
-      {
-        "numara": "1226",
-        "name": "Ahmed Salih Baysal"
-      }
-    ],
-    "7-B": [
-      {
-        "numara": "179",
-        "name": "ZEYNEP SUDE AKSEL"
-      },
-      {
-        "numara": "1020",
-        "name": "Selen Nas Maden"
-      },
-      {
-        "numara": "1036",
-        "name": "Berat Erdem"
-      },
-      {
-        "numara": "1038",
-        "name": "Recep Kılıç"
-      },
-      {
-        "numara": "1042",
-        "name": "Zeynep Hafsa Faruk"
-      },
-      {
-        "numara": "1062",
-        "name": "Yusuf Bera Özkan"
-      },
-      {
-        "numara": "1070",
-        "name": "Ömer Avcı"
-      },
-      {
-        "numara": "1164",
-        "name": "Yusuf Alperen Akgöz"
-      },
-      {
-        "numara": "1165",
-        "name": "Zehra Özkan İr"
-      },
-      {
-        "numara": "1167",
-        "name": "Yusuf Ensar Sezer"
-      },
-      {
-        "numara": "1184",
-        "name": "Elif Betül İşleyen"
-      },
-      {
-        "numara": "1186",
-        "name": "Yiğit Efe Gündoğdu"
-      },
-      {
-        "numara": "1187",
-        "name": "Zehra Beril Daldal"
-      },
-      {
-        "numara": "1196",
-        "name": "Osman Asım Nesil Uslu"
-      },
-      {
-        "numara": "1197",
-        "name": "Zeynep Şiir Uslu"
-      },
-      {
-        "numara": "1206",
-        "name": "İsmail Sefa Yiğiter"
-      },
-      {
-        "numara": "1212",
-        "name": "Nurbanu Gökcel"
-      },
-      {
-        "numara": "1221",
-        "name": "Zümra Betül İskender"
-      },
-      {
-        "numara": "1227",
-        "name": "ZEYNEP RANA TAN"
-      },
-      {
-        "numara": "1250",
-        "name": "Ahmet Adem Demir"
-      }
-    ],
-    "7-C": [
-      {
-        "numara": "173",
-        "name": "ZEHRA YILDIZ"
-      },
-      {
-        "numara": "177",
-        "name": "SENA SİMAY KÖK"
-      },
-      {
-        "numara": "181",
-        "name": "ESİLA KADERCİ"
-      },
-      {
-        "numara": "1013",
-        "name": "Feyza Başak"
-      },
-      {
-        "numara": "1030",
-        "name": "Ülkü Kocagöz"
-      },
-      {
-        "numara": "1033",
-        "name": "Nisa Nur Mutlu"
-      },
-      {
-        "numara": "1052",
-        "name": "Ömür Yaprak Gençler"
-      },
-      {
-        "numara": "1089",
-        "name": "Zeynep Mihriban Döğer"
-      },
-      {
-        "numara": "1093",
-        "name": "Meryem Ceyda Mandacı"
-      },
-      {
-        "numara": "1132",
-        "name": "ENNUR KÜÇÜKKILIÇ"
-      },
-      {
-        "numara": "1183",
-        "name": "Çınar Asaf Tepe"
-      },
-      {
-        "numara": "1185",
-        "name": "LALEZAR CEYLİN TAN"
-      },
-      {
-        "numara": "1189",
-        "name": "Beril Su Yazıcı"
-      },
-      {
-        "numara": "1190",
-        "name": "Mustafa Mercan"
-      },
-      {
-        "numara": "1191",
-        "name": "Ömer Yeşilbaş"
-      },
-      {
-        "numara": "1195",
-        "name": "Sevim İpek Kaya"
-      },
-      {
-        "numara": "1199",
-        "name": "Yusuf Ali Koyuncu"
-      },
-      {
-        "numara": "1200",
-        "name": "Ahmet Ömer Er"
-      },
-      {
-        "numara": "1208",
-        "name": "Turab Tarık Selçuk"
-      },
-      {
-        "numara": "1214",
-        "name": "Emir Ali Solaka"
-      },
-      {
-        "numara": "1247",
-        "name": "ZEYNEP KÜBRA GÜMÜŞOLUK"
-      }
-    ],
-    "8-A": [
-      {
-        "numara": "172",
-        "name": "Afra Yağmur İvgin"
-      },
-      {
-        "numara": "174",
-        "name": "KEREM ÇETİN"
-      },
-      {
-        "numara": "1015",
-        "name": "Aziz Mahmut Demir"
-      },
-      {
-        "numara": "1069",
-        "name": "Siraç Kuru"
-      },
-      {
-        "numara": "1092",
-        "name": "MUHAMMED YEKTA BOLAT"
-      },
-      {
-        "numara": "1116",
-        "name": "Zehra Nur Balıkçıoğlu"
-      },
-      {
-        "numara": "1125",
-        "name": "Kerem Yiğit Eren"
-      },
-      {
-        "numara": "1144",
-        "name": "Zümra Çakır"
-      },
-      {
-        "numara": "1161",
-        "name": "Emir Köksal"
-      },
-      {
-        "numara": "1163",
-        "name": "Zeynep Rana Köksal"
-      },
-      {
-        "numara": "1175",
-        "name": "EMİR YILDIRIM"
-      },
-      {
-        "numara": "1176",
-        "name": "SÜMEYYE ÇAKMAKLI"
-      },
-      {
-        "numara": "1180",
-        "name": "Ayşe Sare Tuzcuoğlu"
-      },
-      {
-        "numara": "1192",
-        "name": "Umut Kaan Aydoğan"
-      },
-      {
-        "numara": "1201",
-        "name": "ABDÜLSAMET KAYASAN"
-      },
-      {
-        "numara": "1225",
-        "name": "Ahmet Hamza Örnek"
-      },
-      {
-        "numara": "1232",
-        "name": "TAHA IGBARIA"
-      },
-      {
-        "numara": "1237",
-        "name": "AYŞE HAFZA PULAT"
-      },
-      {
-        "numara": "1251",
-        "name": "Zeynep Dila Şengül"
-      }
-    ],
-    "8-B": [
-      {
-        "numara": "178",
-        "name": "ZEYNEP MEHLİKA AKSU"
-      },
-      {
-        "numara": "185",
-        "name": "SELMAN TÜNCEL"
-      },
-      {
-        "numara": "1087",
-        "name": "Tarık Eymen Tezcan"
-      },
-      {
-        "numara": "1094",
-        "name": "Emir Sağlam"
-      },
-      {
-        "numara": "1095",
-        "name": "Tahir Eriş"
-      },
-      {
-        "numara": "1100",
-        "name": "Deniz Erdem Saraç"
-      },
-      {
-        "numara": "1119",
-        "name": "Mehmet Oğuz Cömert"
-      },
-      {
-        "numara": "1127",
-        "name": "Göktuğ Bayraktar"
-      },
-      {
-        "numara": "1143",
-        "name": "Ali Eren Demirel"
-      },
-      {
-        "numara": "1149",
-        "name": "Elif Sırmalı"
-      },
-      {
-        "numara": "1151",
-        "name": "Ervanur Sancakdar"
-      },
-      {
-        "numara": "1155",
-        "name": "Hazal Yılmaz"
-      },
-      {
-        "numara": "1174",
-        "name": "Nurdide Akyüzoğlu"
-      },
-      {
-        "numara": "1178",
-        "name": "Zeynep Erva Gündüz"
-      },
-      {
-        "numara": "1194",
-        "name": "Doruk Uğur"
-      },
-      {
-        "numara": "1209",
-        "name": "Muhammed Zahit Barik"
-      },
-      {
-        "numara": "1216",
-        "name": "Yağmur Aybüke Bülbül"
-      },
-      {
-        "numara": "1220",
-        "name": "Zeynep Kurhan"
-      },
-      {
-        "numara": "1234",
-        "name": "Erva Beren Keleş"
-      },
-      {
-        "numara": "1244",
-        "name": "AYBİKE ZEYNEP SERT"
-      },
-      {
-        "numara": "1248",
-        "name": "NİSA KONT"
-      }
-    ],
-    "8-C": [
-      {
-        "numara": "1031",
-        "name": "Ceren Rana Balık"
-      },
-      {
-        "numara": "1034",
-        "name": "Emirhan Günay"
-      },
-      {
-        "numara": "1068",
-        "name": "Ela Miray Yıldırım"
-      },
-      {
-        "numara": "1072",
-        "name": "Ahmet Cevdet Duman"
-      },
-      {
-        "numara": "1085",
-        "name": "Simla Işık"
-      },
-      {
-        "numara": "1108",
-        "name": "Furkan Yarbağ"
-      },
-      {
-        "numara": "1115",
-        "name": "İbrahim Eymen Buka"
-      },
-      {
-        "numara": "1117",
-        "name": "Ali Osman Uygun"
-      },
-      {
-        "numara": "1118",
-        "name": "Ömer Yekta Tarım"
-      },
-      {
-        "numara": "1123",
-        "name": "Mehmet Akif Akgün"
-      },
-      {
-        "numara": "1128",
-        "name": "Ömer İnanç Ayık"
-      },
-      {
-        "numara": "1129",
-        "name": "Elif Yardım"
-      },
-      {
-        "numara": "1138",
-        "name": "Zeynep Sena Kaplan"
-      },
-      {
-        "numara": "1139",
-        "name": "DİLA BİNGÖL"
-      },
-      {
-        "numara": "1152",
-        "name": "Canan Büşra Kurban"
-      },
-      {
-        "numara": "1153",
-        "name": "Handan Berra Kurban"
-      },
-      {
-        "numara": "1160",
-        "name": "Eslem Sena Kar"
-      },
-      {
-        "numara": "1171",
-        "name": "Zümra Atmaca"
-      },
-      {
-        "numara": "1207",
-        "name": "Muhammed Berat Barik"
-      },
-      {
-        "numara": "1217",
-        "name": "Eyüp Ensar Göksu"
-      }
-    ]
-  },
   "grades": {
     "5": [
       "A",
@@ -819,6 +17,808 @@
       "A",
       "B",
       "C"
+    ]
+  },
+  "classes": {
+    "5-A": [
+      {
+        "no": "175",
+        "name": "ŞEVVAL SARGIN"
+      },
+      {
+        "no": "180",
+        "name": "HASAN ZEKİ AYDIN"
+      },
+      {
+        "no": "1021",
+        "name": "Nisanur İskender"
+      },
+      {
+        "no": "1023",
+        "name": "Ensar Eriş"
+      },
+      {
+        "no": "1029",
+        "name": "Alperen Kasap"
+      },
+      {
+        "no": "1035",
+        "name": "Erdem Kurtaran"
+      },
+      {
+        "no": "1045",
+        "name": "Şura Başak"
+      },
+      {
+        "no": "1058",
+        "name": "Gözde Meryem Özcan"
+      },
+      {
+        "no": "1065",
+        "name": "Ali Hamza Akgül"
+      },
+      {
+        "no": "1083",
+        "name": "Taylan Uygun"
+      },
+      {
+        "no": "1096",
+        "name": "Alya Karayaka"
+      },
+      {
+        "no": "1141",
+        "name": "Musab Ali Kurt"
+      },
+      {
+        "no": "1154",
+        "name": "Osman Asaf Sevim"
+      },
+      {
+        "no": "1170",
+        "name": "İnci Kurt"
+      },
+      {
+        "no": "1173",
+        "name": "Kuzey Yağız Kılıç"
+      },
+      {
+        "no": "1218",
+        "name": "CELAL KAVAK"
+      },
+      {
+        "no": "1219",
+        "name": "YUSUF EMİR CAN"
+      },
+      {
+        "no": "1222",
+        "name": "MUHAMMET YUSUF SAK"
+      },
+      {
+        "no": "1229",
+        "name": "AYBİKE DEMİRAL"
+      },
+      {
+        "no": "1245",
+        "name": "Selim Emre Geçgil"
+      },
+      {
+        "no": "1249",
+        "name": "BUĞLEM SU BAŞTAN"
+      }
+    ],
+    "5-B": [
+      {
+        "no": "1043",
+        "name": "Umut Hakkı Genç"
+      },
+      {
+        "no": "1050",
+        "name": "Ali Mert Balık"
+      },
+      {
+        "no": "1053",
+        "name": "Ali Berkay Kurtulmuş"
+      },
+      {
+        "no": "1054",
+        "name": "Nil Buzrul"
+      },
+      {
+        "no": "1057",
+        "name": "Ömer Asaf Yüksel"
+      },
+      {
+        "no": "1059",
+        "name": "Kerem Demir"
+      },
+      {
+        "no": "1066",
+        "name": "Fatih Kağan Yavuz"
+      },
+      {
+        "no": "1073",
+        "name": "Muhammed Ali Sümbül"
+      },
+      {
+        "no": "1090",
+        "name": "Zührenaz Fidan"
+      },
+      {
+        "no": "1107",
+        "name": "Ahmet Arhan Dülger"
+      },
+      {
+        "no": "1114",
+        "name": "Zülal Serra Cicioğlu"
+      },
+      {
+        "no": "1130",
+        "name": "Ahmed Salih Balcı"
+      },
+      {
+        "no": "1137",
+        "name": "Ali Kerem Tosyalı"
+      },
+      {
+        "no": "1146",
+        "name": "Hafsa Miray Çapa"
+      },
+      {
+        "no": "1159",
+        "name": "Mustafa Deniz Tavlı"
+      },
+      {
+        "no": "1162",
+        "name": "Emir Haktan Kovacıoğlu"
+      },
+      {
+        "no": "1188",
+        "name": "Ali Kerem Atmaca"
+      },
+      {
+        "no": "1228",
+        "name": "ÖYKÜ EMİNE HELVACI"
+      },
+      {
+        "no": "1240",
+        "name": "EMİR TUNA"
+      },
+      {
+        "no": "1243",
+        "name": "MUHAMMED ENSAR BARİK"
+      }
+    ],
+    "6-A": [
+      {
+        "no": "182",
+        "name": "ZAHİDE ŞİFA AKSU"
+      },
+      {
+        "no": "1014",
+        "name": "İREM YUMAT"
+      },
+      {
+        "no": "1041",
+        "name": "Ceren Hüma Adak"
+      },
+      {
+        "no": "1060",
+        "name": "Pınara Tusem Tufan"
+      },
+      {
+        "no": "1061",
+        "name": "Berat Başak"
+      },
+      {
+        "no": "1071",
+        "name": "Mehmet Emin Akbulut"
+      },
+      {
+        "no": "1098",
+        "name": "Melike Eylül Şengül"
+      },
+      {
+        "no": "1106",
+        "name": "Yiğit Sivri"
+      },
+      {
+        "no": "1122",
+        "name": "İlyas Berat Kirez"
+      },
+      {
+        "no": "1134",
+        "name": "Zeynep Azra Kar"
+      },
+      {
+        "no": "1168",
+        "name": "Ömer Saffan Cankurt"
+      },
+      {
+        "no": "1177",
+        "name": "Ayşe Börte Arıdil"
+      },
+      {
+        "no": "1179",
+        "name": "HAMZA ÖZTÜRK"
+      },
+      {
+        "no": "1181",
+        "name": "Ali Çelebi"
+      },
+      {
+        "no": "1231",
+        "name": "KAREEM IGBARIA"
+      },
+      {
+        "no": "1233",
+        "name": "Oğuz Şükür"
+      },
+      {
+        "no": "1239",
+        "name": "Fatma Hüma Aydın"
+      }
+    ],
+    "6-B": [
+      {
+        "no": "176",
+        "name": "EMİR TOÇOĞLU"
+      },
+      {
+        "no": "1016",
+        "name": "Aras Barlık"
+      },
+      {
+        "no": "1037",
+        "name": "Emin Mert Erciyes"
+      },
+      {
+        "no": "1088",
+        "name": "Adnan Eren Eraslan"
+      },
+      {
+        "no": "1102",
+        "name": "Elif Yağmur Şentürk"
+      },
+      {
+        "no": "1105",
+        "name": "Esma Mina Ulusal"
+      },
+      {
+        "no": "1111",
+        "name": "Melih Sait Türkyolu"
+      },
+      {
+        "no": "1126",
+        "name": "Mehmet Akif Yıldırım"
+      },
+      {
+        "no": "1131",
+        "name": "Defne Şensoy"
+      },
+      {
+        "no": "1142",
+        "name": "Yaren Ayhan"
+      },
+      {
+        "no": "1145",
+        "name": "Eymen Ayhan"
+      },
+      {
+        "no": "1147",
+        "name": "Yakup Eymen Aydın"
+      },
+      {
+        "no": "1148",
+        "name": "Sara Nas Çorlu"
+      },
+      {
+        "no": "1157",
+        "name": "Elif Beyza Keleş"
+      },
+      {
+        "no": "1242",
+        "name": "YUSUF ALİ UZUN"
+      },
+      {
+        "no": "1246",
+        "name": "HİRA ŞEN"
+      }
+    ],
+    "7-A": [
+      {
+        "no": "1032",
+        "name": "Erva Nur Altunbudak"
+      },
+      {
+        "no": "1064",
+        "name": "Ravzanur Malyemez"
+      },
+      {
+        "no": "1067",
+        "name": "Ahmed Yusuf Ateş"
+      },
+      {
+        "no": "1074",
+        "name": "Muhammed Eymen Ayvaz"
+      },
+      {
+        "no": "1076",
+        "name": "Sare Kanyılmaz"
+      },
+      {
+        "no": "1078",
+        "name": "Hamza Yiğit Duman"
+      },
+      {
+        "no": "1079",
+        "name": "Ahmet Bilal Çalışkan"
+      },
+      {
+        "no": "1081",
+        "name": "Zümra Bade Yağmur"
+      },
+      {
+        "no": "1084",
+        "name": "Hacer Merve Balcı"
+      },
+      {
+        "no": "1086",
+        "name": "Selin Berk"
+      },
+      {
+        "no": "1097",
+        "name": "Zülal Çelik"
+      },
+      {
+        "no": "1103",
+        "name": "Yağız Ayhan Şengönül"
+      },
+      {
+        "no": "1104",
+        "name": "Ahmet Yahya Peren"
+      },
+      {
+        "no": "1136",
+        "name": "Kıvanç Babaoğlu"
+      },
+      {
+        "no": "1182",
+        "name": "Reyyan Sandıkçı"
+      },
+      {
+        "no": "1203",
+        "name": "Kerem Aslan"
+      },
+      {
+        "no": "1205",
+        "name": "Ceyda Atış"
+      },
+      {
+        "no": "1211",
+        "name": "Zeynep Sena Aktaş"
+      },
+      {
+        "no": "1215",
+        "name": "Hamit Emre Özdil"
+      },
+      {
+        "no": "1226",
+        "name": "Ahmed Salih Baysal"
+      }
+    ],
+    "7-B": [
+      {
+        "no": "179",
+        "name": "ZEYNEP SUDE AKSEL"
+      },
+      {
+        "no": "1020",
+        "name": "Selen Nas Maden"
+      },
+      {
+        "no": "1036",
+        "name": "Berat Erdem"
+      },
+      {
+        "no": "1038",
+        "name": "Recep Kılıç"
+      },
+      {
+        "no": "1042",
+        "name": "Zeynep Hafsa Faruk"
+      },
+      {
+        "no": "1062",
+        "name": "Yusuf Bera Özkan"
+      },
+      {
+        "no": "1070",
+        "name": "Ömer Avcı"
+      },
+      {
+        "no": "1164",
+        "name": "Yusuf Alperen Akgöz"
+      },
+      {
+        "no": "1165",
+        "name": "Zehra Özkan İr"
+      },
+      {
+        "no": "1167",
+        "name": "Yusuf Ensar Sezer"
+      },
+      {
+        "no": "1184",
+        "name": "Elif Betül İşleyen"
+      },
+      {
+        "no": "1186",
+        "name": "Yiğit Efe Gündoğdu"
+      },
+      {
+        "no": "1187",
+        "name": "Zehra Beril Daldal"
+      },
+      {
+        "no": "1196",
+        "name": "Osman Asım Nesil Uslu"
+      },
+      {
+        "no": "1197",
+        "name": "Zeynep Şiir Uslu"
+      },
+      {
+        "no": "1206",
+        "name": "İsmail Sefa Yiğiter"
+      },
+      {
+        "no": "1212",
+        "name": "Nurbanu Gökcel"
+      },
+      {
+        "no": "1221",
+        "name": "Zümra Betül İskender"
+      },
+      {
+        "no": "1227",
+        "name": "ZEYNEP RANA TAN"
+      },
+      {
+        "no": "1250",
+        "name": "Ahmet Adem Demir"
+      }
+    ],
+    "7-C": [
+      {
+        "no": "173",
+        "name": "ZEHRA YILDIZ"
+      },
+      {
+        "no": "177",
+        "name": "SENA SİMAY KÖK"
+      },
+      {
+        "no": "181",
+        "name": "ESİLA KADERCİ"
+      },
+      {
+        "no": "1013",
+        "name": "Feyza Başak"
+      },
+      {
+        "no": "1030",
+        "name": "Ülkü Kocagöz"
+      },
+      {
+        "no": "1033",
+        "name": "Nisa Nur Mutlu"
+      },
+      {
+        "no": "1052",
+        "name": "Ömür Yaprak Gençler"
+      },
+      {
+        "no": "1089",
+        "name": "Zeynep Mihriban Döğer"
+      },
+      {
+        "no": "1093",
+        "name": "Meryem Ceyda Mandacı"
+      },
+      {
+        "no": "1132",
+        "name": "ENNUR KÜÇÜKKILIÇ"
+      },
+      {
+        "no": "1183",
+        "name": "Çınar Asaf Tepe"
+      },
+      {
+        "no": "1185",
+        "name": "LALEZAR CEYLİN TAN"
+      },
+      {
+        "no": "1189",
+        "name": "Beril Su Yazıcı"
+      },
+      {
+        "no": "1190",
+        "name": "Mustafa Mercan"
+      },
+      {
+        "no": "1191",
+        "name": "Ömer Yeşilbaş"
+      },
+      {
+        "no": "1195",
+        "name": "Sevim İpek Kaya"
+      },
+      {
+        "no": "1199",
+        "name": "Yusuf Ali Koyuncu"
+      },
+      {
+        "no": "1200",
+        "name": "Ahmet Ömer Er"
+      },
+      {
+        "no": "1208",
+        "name": "Turab Tarık Selçuk"
+      },
+      {
+        "no": "1214",
+        "name": "Emir Ali Solaka"
+      },
+      {
+        "no": "1247",
+        "name": "ZEYNEP KÜBRA GÜMÜŞOLUK"
+      }
+    ],
+    "8-A": [
+      {
+        "no": "172",
+        "name": "Afra Yağmur İvgin"
+      },
+      {
+        "no": "174",
+        "name": "KEREM ÇETİN"
+      },
+      {
+        "no": "1015",
+        "name": "Aziz Mahmut Demir"
+      },
+      {
+        "no": "1069",
+        "name": "Siraç Kuru"
+      },
+      {
+        "no": "1092",
+        "name": "MUHAMMED YEKTA BOLAT"
+      },
+      {
+        "no": "1116",
+        "name": "Zehra Nur Balıkçıoğlu"
+      },
+      {
+        "no": "1125",
+        "name": "Kerem Yiğit Eren"
+      },
+      {
+        "no": "1144",
+        "name": "Zümra Çakır"
+      },
+      {
+        "no": "1161",
+        "name": "Emir Köksal"
+      },
+      {
+        "no": "1163",
+        "name": "Zeynep Rana Köksal"
+      },
+      {
+        "no": "1175",
+        "name": "EMİR YILDIRIM"
+      },
+      {
+        "no": "1176",
+        "name": "SÜMEYYE ÇAKMAKLI"
+      },
+      {
+        "no": "1180",
+        "name": "Ayşe Sare Tuzcuoğlu"
+      },
+      {
+        "no": "1192",
+        "name": "Umut Kaan Aydoğan"
+      },
+      {
+        "no": "1201",
+        "name": "ABDÜLSAMET KAYASAN"
+      },
+      {
+        "no": "1225",
+        "name": "Ahmet Hamza Örnek"
+      },
+      {
+        "no": "1232",
+        "name": "TAHA IGBARIA"
+      },
+      {
+        "no": "1237",
+        "name": "AYŞE HAFZA PULAT"
+      },
+      {
+        "no": "1251",
+        "name": "Zeynep Dila Şengül"
+      }
+    ],
+    "8-B": [
+      {
+        "no": "178",
+        "name": "ZEYNEP MEHLİKA AKSU"
+      },
+      {
+        "no": "185",
+        "name": "SELMAN TÜNCEL"
+      },
+      {
+        "no": "1087",
+        "name": "Tarık Eymen Tezcan"
+      },
+      {
+        "no": "1094",
+        "name": "Emir Sağlam"
+      },
+      {
+        "no": "1095",
+        "name": "Tahir Eriş"
+      },
+      {
+        "no": "1100",
+        "name": "Deniz Erdem Saraç"
+      },
+      {
+        "no": "1119",
+        "name": "Mehmet Oğuz Cömert"
+      },
+      {
+        "no": "1127",
+        "name": "Göktuğ Bayraktar"
+      },
+      {
+        "no": "1143",
+        "name": "Ali Eren Demirel"
+      },
+      {
+        "no": "1149",
+        "name": "Elif Sırmalı"
+      },
+      {
+        "no": "1151",
+        "name": "Ervanur Sancakdar"
+      },
+      {
+        "no": "1155",
+        "name": "Hazal Yılmaz"
+      },
+      {
+        "no": "1174",
+        "name": "Nurdide Akyüzoğlu"
+      },
+      {
+        "no": "1178",
+        "name": "Zeynep Erva Gündüz"
+      },
+      {
+        "no": "1194",
+        "name": "Doruk Uğur"
+      },
+      {
+        "no": "1209",
+        "name": "Muhammed Zahit Barik"
+      },
+      {
+        "no": "1216",
+        "name": "Yağmur Aybüke Bülbül"
+      },
+      {
+        "no": "1220",
+        "name": "Zeynep Kurhan"
+      },
+      {
+        "no": "1234",
+        "name": "Erva Beren Keleş"
+      },
+      {
+        "no": "1244",
+        "name": "AYBİKE ZEYNEP SERT"
+      },
+      {
+        "no": "1248",
+        "name": "NİSA KONT"
+      }
+    ],
+    "8-C": [
+      {
+        "no": "1031",
+        "name": "Ceren Rana Balık"
+      },
+      {
+        "no": "1034",
+        "name": "Emirhan Günay"
+      },
+      {
+        "no": "1068",
+        "name": "Ela Miray Yıldırım"
+      },
+      {
+        "no": "1072",
+        "name": "Ahmet Cevdet Duman"
+      },
+      {
+        "no": "1085",
+        "name": "Simla Işık"
+      },
+      {
+        "no": "1108",
+        "name": "Furkan Yarbağ"
+      },
+      {
+        "no": "1115",
+        "name": "İbrahim Eymen Buka"
+      },
+      {
+        "no": "1117",
+        "name": "Ali Osman Uygun"
+      },
+      {
+        "no": "1118",
+        "name": "Ömer Yekta Tarım"
+      },
+      {
+        "no": "1123",
+        "name": "Mehmet Akif Akgün"
+      },
+      {
+        "no": "1128",
+        "name": "Ömer İnanç Ayık"
+      },
+      {
+        "no": "1129",
+        "name": "Elif Yardım"
+      },
+      {
+        "no": "1138",
+        "name": "Zeynep Sena Kaplan"
+      },
+      {
+        "no": "1139",
+        "name": "DİLA BİNGÖL"
+      },
+      {
+        "no": "1152",
+        "name": "Canan Büşra Kurban"
+      },
+      {
+        "no": "1153",
+        "name": "Handan Berra Kurban"
+      },
+      {
+        "no": "1160",
+        "name": "Eslem Sena Kar"
+      },
+      {
+        "no": "1171",
+        "name": "Zümra Atmaca"
+      },
+      {
+        "no": "1207",
+        "name": "Muhammed Berat Barik"
+      },
+      {
+        "no": "1217",
+        "name": "Eyüp Ensar Göksu"
+      }
     ]
   }
 }
