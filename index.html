@@ -40,23 +40,16 @@
     .toolbar{display:flex;gap:8px;flex-wrap:wrap}
     .toolbar button{width:auto;padding:10px 12px}
     .plan{overflow:auto;border:1px solid var(--line);border-radius:14px;background:#091126}
-    table{border-collapse:collapse;width:100%}
-    th,td{border:2px solid #1f3158;padding:10px;vertical-align:top}
+    table{border-collapse:collapse;width:100%;table-layout:fixed}
+    th,td{border:2px solid #1f3158;padding:10px;vertical-align:middle}
     th{background:#0f1a2e;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
-    td select{background:#071027;border:1px solid #233a6a}
+    td select{background:#071027;border:1px solid #233a6a;width:100%}
+    tbody tr{height:76px}
     .note{border:2px solid #2a4277;border-radius:14px;padding:12px;background:linear-gradient(180deg, rgba(215,179,90,.08), rgba(44,108,255,.06));}
     .note b{display:block;margin-bottom:6px}
     .rightcol{display:grid;grid-template-columns:1fr;gap:14px}
     .badge{display:inline-block;padding:3px 8px;border-radius:999px;border:1px solid var(--line);font-size:11px;color:var(--muted)}
-  
-
-/* Plan tablosu satır yüksekliklerini dengeler */
-table { table-layout: fixed; }
-tbody tr { height: 76px; }
-td { vertical-align: middle; }
-td select { width: 100%; }
-
-</style>
+  </style>
 </head>
 <body>
   <div class="wrap">
@@ -101,19 +94,20 @@ td select { width: 100%; }
               <option value="2">2</option>
               <option value="3">3</option>
             </select>
-          <div class="hint" style="margin-top:10px">Soru hedefi (opsiyonel)</div>
-          <input id="manualQ" type="number" min="0" placeholder="örn. 50" style="margin-top:6px"/>
 
+            <div class="tiny" style="margin-top:10px">Soru hedefi (opsiyonel)</div>
+            <input id="manualQ" type="number" min="0" placeholder="örn. 50" style="margin-top:6px"/>
           </div>
-      <div class="field">
-        <label>Manuel soru notu (opsiyonel)</label>
-        <textarea id="manualQNote" rows="2" placeholder="Örn: Matematik: 120 • Türkçe: 80 (serbest metin)"></textarea>
-      </div>
 
           <div>
-            <label>Aktif günler</label>
-            <div class="days" id="days"></div>
+            <label>Manuel soru notu (opsiyonel)</label>
+            <textarea id="manualQNote" rows="2" placeholder="Örn: Matematik: 120 • Türkçe: 80 (serbest metin)"></textarea>
           </div>
+        </div>
+
+        <div>
+          <label>Aktif günler</label>
+          <div class="days" id="days"></div>
         </div>
 
         <hr style="border:0;border-top:1px solid var(--line);margin:12px 0">
@@ -177,16 +171,6 @@ td select { width: 100%; }
   <script>
     // ---- CONFIG
     const DAYS = ["Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi","Pazar"];
-    const SUBJECT_COLORS = {
-      "Matematik":"FF2C6CFF",
-      "Türkçe":"FFFFB020",
-      "Fen Bilimleri":"FF25D366",
-      "Sosyal Bilgiler":"FF9B59B6",
-      "İnkılap Tarihi":"FF9B59B6",
-      "Din Kültürü":"FF00BFA6",
-      "İngilizce":"FFFF5AA2",
-      "default":"FF1F3158"
-    };
 
     // ---- STATE
     let STUDENTS = null;   // students.json
@@ -197,26 +181,53 @@ td select { width: 100%; }
     function el(id){ return document.getElementById(id); }
 
     function resolveRelUrl(rel) {
-  // GitHub Pages altında /repo-adi/ ile çalışırken mutlak path (/...) bozulur.
-  // Bu yüzden her zaman mevcut sayfanın bulunduğu klasöre göre çözüyoruz.
-  return new URL(rel, window.location.href).toString();
-}
-
-async function fetchFirstJson(candidates) {
-  const list = Array.isArray(candidates) ? candidates : [candidates];
-  let lastErr = null;
-
-  for (const rel of list) {
-    try {
-      const res = await fetch(resolveRelUrl(rel), { cache: "no-store" });
-      if (!res.ok) throw new Error(`${rel} fetch failed: ${res.status}`);
-      return await res.json();
-    } catch (e) {
-      lastErr = e;
+      // GitHub Pages altında /repo-adi/ ile çalışırken mutlak path (/...) bozulur.
+      // Bu yüzden her zaman mevcut sayfanın bulunduğu klasöre göre çözüyoruz.
+      return new URL(rel, window.location.href).toString();
     }
-  }
-  throw lastErr || new Error("JSON fetch failed");
-}
+
+    async function fetchFirstJson(candidates) {
+      const list = Array.isArray(candidates) ? candidates : [candidates];
+      let lastErr = null;
+      for (const rel of list) {
+        try {
+          const res = await fetch(resolveRelUrl(rel), { cache: "no-store" });
+          if (!res.ok) throw new Error(`${rel} fetch failed: ${res.status}`);
+          return await res.json();
+        } catch (e) {
+          lastErr = e;
+        }
+      }
+      throw lastErr || new Error("JSON fetch failed");
+    }
+
+    // students.json esnekleştirme:
+    // 1) { classes: { "5-A": [ {numara, ad}, ... ], ... } }
+    // 2) { classes: { "5::A": [...] } } (eski deneme)
+    // 3) [ { sube:"5-A", numara:"1021", adi:"..." }, ... ] (flat)
+    function normalizeStudents(raw){
+      if(!raw) return { classes:{} };
+      if(Array.isArray(raw)){
+        const classes = {};
+        raw.forEach(r=>{
+          const sube = (r.sube ?? r.class ?? r.section ?? "").toString().trim();
+          if(!sube) return;
+          if(!classes[sube]) classes[sube]=[];
+          classes[sube].push(r);
+        });
+        return { classes };
+      }
+      if(raw.classes && typeof raw.classes === "object"){
+        const classes = {};
+        for(const [k,v] of Object.entries(raw.classes)){
+          // "5::A" -> "5-A"
+          const kk = k.includes("::") ? k.replace("::","-") : k;
+          classes[kk] = Array.isArray(v) ? v : [];
+        }
+        return { classes };
+      }
+      return { classes:{} };
+    }
 
     function initDays(){
       const box = el("days");
@@ -244,18 +255,14 @@ async function fetchFirstJson(candidates) {
     function fillSectionOptions(){
       const grade = el("grade").value;
       const sec = el("section");
-      const keys = Object.keys(STUDENTS.classes || {});
-      const sections = keys.filter(k=>k.startsWith(grade+"-")).map(k=>k.split("-")[1]);
-      const uniq = [...new Set(sections)].sort();
-      sec.innerHTML = uniq.map(s=>`<option value="${s}">${grade}-${s}</option>`).join("");
+      const keys = Object.keys((STUDENTS && STUDENTS.classes) ? STUDENTS.classes : {});
+      const sections = keys.filter(k => k.startsWith(grade + "-")).sort((a,b)=>a.localeCompare(b,"tr"));
+      sec.innerHTML = sections.map(k=>`<option value="${k}">${k}</option>`).join("");
     }
 
-    
     function fillStudentOptions(){
-      const gradeKey = el("grade").value;
-      const classKey = el("section").value;
-      const key = `${gradeKey}::${classKey}`;
-      const list = (STUDENTS && STUDENTS.classes && STUDENTS.classes[key]) ? STUDENTS.classes[key] : [];
+      const sectionKey = el("section").value; // örn "5-A"
+      const list = (STUDENTS && STUDENTS.classes && STUDENTS.classes[sectionKey]) ? STUDENTS.classes[sectionKey] : [];
 
       const sel = el("student");
       sel.innerHTML = "";
@@ -265,46 +272,40 @@ async function fetchFirstJson(candidates) {
       sel.appendChild(opt0);
 
       list.forEach((x, idx)=>{
-        const num = (x.num ?? x.no ?? x.number ?? x.Numara ?? x["Numara"] ?? x["No"] ?? "").toString().trim();
-        const name = (x.name ?? x.adi ?? x.Ad ?? x["Adı"] ?? x["Adi"] ?? "").toString().trim();
+        const num = (x.numara ?? x.num ?? x.no ?? x.number ?? x.Numara ?? x["Numara"] ?? x["No"] ?? "").toString().trim();
+        const name = (x.ad ?? x.adi ?? x.name ?? x.Ad ?? x["Adı"] ?? x["Adi"] ?? "").toString().trim();
         const opt = document.createElement("option");
         opt.value = String(idx);
         const numTxt = (!num || String(num).toLowerCase()==="undefined" || String(num).toLowerCase()==="nan") ? "-" : num;
-        opt.textContent = `${classKey} • ${numTxt} • ${name || "-"}`;
+        opt.textContent = `${sectionKey} • ${numTxt} • ${name || "-"}`;
         sel.appendChild(opt);
       });
 
-      // reset selection
       sel.value = "";
-      
     }
 
-
-    
     function getStudentInfo(){
-      const gradeKey = el("grade").value;
-      const classKey = el("section").value;
-      const key = `${gradeKey}::${classKey}`;
-      const list = (STUDENTS && STUDENTS.classes && STUDENTS.classes[key]) ? STUDENTS.classes[key] : [];
+      const sectionKey = el("section").value; // "5-A"
+      const gradeKey = (sectionKey.split("-")[0] || el("grade").value || "").trim();
+      const list = (STUDENTS && STUDENTS.classes && STUDENTS.classes[sectionKey]) ? STUDENTS.classes[sectionKey] : [];
       const idx = parseInt(el("student").value,10);
       const s = Number.isFinite(idx) ? list[idx] : null;
 
-      const num = s ? (s.num ?? s.no ?? s.number ?? s.Numara ?? s["Numara"] ?? s["No"] ?? "") : "";
-      const name = s ? (s.name ?? s.adi ?? s.Ad ?? s["Adı"] ?? s["Adi"] ?? "") : "";
+      const num = s ? (s.numara ?? s.num ?? s.no ?? s.number ?? s.Numara ?? s["Numara"] ?? s["No"] ?? "") : "";
+      const name = s ? (s.ad ?? s.adi ?? s.name ?? s.Ad ?? s["Adı"] ?? s["Adi"] ?? "") : "";
 
       return {
         gradeKey,
-        classKey,
+        classKey: sectionKey,
         num: (num||"").toString().trim(),
         name: (name||"").toString().trim()
       };
     }
 
-
     function fillSubjectOptions(){
       const grade = el("grade").value;
       const subjSel = el("subject");
-      const gradeObj = OUTCOMES.grades[grade] || {};
+      const gradeObj = (OUTCOMES && OUTCOMES.grades) ? (OUTCOMES.grades[grade] || {}) : {};
       const subjects = Object.keys(gradeObj).sort((a,b)=>a.localeCompare(b,"tr"));
       subjSel.innerHTML = `<option value="__all__">Tümü</option>` + subjects.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("");
     }
@@ -313,7 +314,7 @@ async function fetchFirstJson(candidates) {
       const grade = el("grade").value;
       const subj = el("subject").value;
       const unitSel = el("unit");
-      const gradeObj = OUTCOMES.grades[grade] || {};
+      const gradeObj = (OUTCOMES && OUTCOMES.grades) ? (OUTCOMES.grades[grade] || {}) : {};
       let items = [];
       if(subj==="__all__"){
         Object.values(gradeObj).forEach(arr => items.push(...arr));
@@ -334,11 +335,11 @@ async function fetchFirstJson(candidates) {
       const unit = el("unit").value;
       const q = (el("q").value || "").trim().toLocaleLowerCase("tr-TR");
 
-      const gradeObj = OUTCOMES.grades[grade] || {};
+      const gradeObj = (OUTCOMES && OUTCOMES.grades) ? (OUTCOMES.grades[grade] || {}) : {};
       let pool = [];
       if(subj==="__all__"){
         Object.entries(gradeObj).forEach(([s,arr]) => {
-          arr.forEach(it => pool.push({...it, subject:s, grade}));
+          (arr||[]).forEach(it => pool.push({...it, subject:s, grade}));
         });
       } else {
         (gradeObj[subj]||[]).forEach(it => pool.push({...it, subject:subj, grade}));
@@ -374,7 +375,6 @@ async function fetchFirstJson(candidates) {
             selected.set(item.id, item);
           } else {
             selected.delete(item.id);
-            // also remove from plan slots if present
             for(const k of Object.keys(plan)){
               plan[k] = plan[k].map(v => v===item.id ? "" : v);
             }
@@ -394,14 +394,35 @@ async function fetchFirstJson(candidates) {
       el("slotCount").textContent = String(actDays.length * perDay);
     }
 
+    function buildPlanOptions(){
+      const items = Array.from(selected.values());
+      items.sort((a,b)=> (a.subject||"").localeCompare(b.subject||"tr") || (a.unit||"").localeCompare(b.unit||"tr") || (a.text||"").localeCompare(b.text||"tr"));
+      const groups = {};
+      items.forEach(it=>{
+        if(!groups[it.subject]) groups[it.subject]=[];
+        groups[it.subject].push(it);
+      });
+      return (current)=>{
+        let html = `<option value="">(Boş)</option>`;
+        Object.keys(groups).sort((a,b)=>a.localeCompare(b,"tr")).forEach(subj=>{
+          html += `<optgroup label="${escapeHtml(subj)}">`;
+          groups[subj].forEach(it=>{
+            const label = `${it.unit ? it.unit+" — " : ""}${it.text}`;
+            const sel = String(current)===String(it.id) ? "selected" : "";
+            html += `<option value="${escapeHtml(it.id)}" ${sel}>${escapeHtml(label)}</option>`;
+          });
+          html += `</optgroup>`;
+        });
+        return html;
+      };
+    }
+
     function renderPlanTable(){
       const perDay = parseInt(el("perDay").value,10);
       const actDays = getActiveDays();
-      // init plan
       actDays.forEach(i=>{
         if(!plan[i] || plan[i].length !== perDay) plan[i] = Array(perDay).fill("");
       });
-      // remove non-active days
       Object.keys(plan).forEach(k=>{
         if(!actDays.includes(parseInt(k,10))) delete plan[k];
       });
@@ -432,30 +453,6 @@ async function fetchFirstJson(candidates) {
       });
     }
 
-    function buildPlanOptions(){
-      const items = Array.from(selected.values());
-      // group by subject
-      items.sort((a,b)=> (a.subject||"").localeCompare(b.subject||"tr") || (a.unit||"").localeCompare(b.unit||"tr") || (a.text||"").localeCompare(b.text||"tr"));
-      const groups = {};
-      items.forEach(it=>{
-        if(!groups[it.subject]) groups[it.subject]=[];
-        groups[it.subject].push(it);
-      });
-      return (current)=>{
-        let html = `<option value="">(Boş)</option>`;
-        Object.keys(groups).sort((a,b)=>a.localeCompare(b,"tr")).forEach(subj=>{
-          html += `<optgroup label="${escapeHtml(subj)}">`;
-          groups[subj].forEach(it=>{
-            const label = `${it.unit ? it.unit+" — " : ""}${it.text}`;
-            const sel = String(current)===String(it.id) ? "selected" : "";
-            html += `<option value="${escapeHtml(it.id)}" ${sel}>${escapeHtml(label)}</option>`;
-          });
-          html += `</optgroup>`;
-        });
-        return html;
-      };
-    }
-
     function autoFillSequential(){
       const perDay = parseInt(el("perDay").value,10);
       const actDays = getActiveDays();
@@ -466,48 +463,57 @@ async function fetchFirstJson(candidates) {
       actDays.forEach(d=>{
         if(!plan[d] || plan[d].length!==perDay) plan[d] = Array(perDay).fill("");
         for(let s=0;s<perDay;s++){
-          if(idx < items.length) plan[d][s] = items[idx++].id;
-          else plan[d][s] = "";
+          plan[d][s] = (idx < items.length) ? items[idx++].id : "";
         }
       });
       renderPlanTable();
     }
 
-    // ---- Excel Export
-    
+    function flattenPlanIds(activeDays, perDay){
+      const ids = [];
+      activeDays.forEach(d=>{
+        if(!plan[d] || plan[d].length !== perDay) plan[d] = Array(perDay).fill("");
+        for(let s=0;s<perDay;s++){
+          ids.push(plan[d][s] || "");
+        }
+      });
+      return ids;
+    }
+
+    function toast(msg){ alert(msg); }
+
     async function exportExcel(){
-      if(!STUDENTS || !OUTCOMES){ toast("Önce veriler yüklensin (students.json, kazanimlar.json).","warn"); return; }
+      if(!STUDENTS || !OUTCOMES){ toast("Önce veriler yüklensin (students.json, kazanımlar.json)."); return; }
 
       const perDay = parseInt(el("perDay").value,10);
-      const activeDays = getActiveDays(); // ['Pazartesi',...]
-      if(activeDays.length===0){ toast("En az 1 aktif gün seç.","warn"); return; }
+      const activeDays = getActiveDays();
+      if(activeDays.length===0){ toast("En az 1 aktif gün seç."); return; }
 
       const st = getStudentInfo();
-      if(!st || !st.classKey || !st.name){ toast("Önce öğrenci seç.","warn"); return; }
-      const manualQ = parseInt((el("manualQ")?.value || "").trim(), 10);
-      const manualQText = (Number.isFinite(manualQ) && manualQ > 0) ? ` Soru hedefi: ${manualQ}.` : "";
+      if(!st || !st.classKey || !st.name){ toast("Önce öğrenci seç."); return; }
 
+      const manualQ = parseInt((el("manualQ").value || "").trim(), 10);
+      const manualQText = (Number.isFinite(manualQ) && manualQ > 0) ? `Soru hedefi: ${manualQ}.` : "";
+      const manualQNote = (el("manualQNote").value || "").trim();
 
-      const slots = activeDays.length * perDay;
-      if(plan.length !== slots){ rebuildPlanGrid(); }
+      const planIds = flattenPlanIds(activeDays, perDay);
 
-      // plan id -> item (OUTCOMES'dan)
+      // plan id -> item
       const gradeKey = st.gradeKey;
       const byId = new Map();
       const gradeObj = (OUTCOMES.grades && OUTCOMES.grades[gradeKey]) ? OUTCOMES.grades[gradeKey] : {};
       Object.keys(gradeObj).forEach(subj=>{
-        (gradeObj[subj]||[]).forEach(it=> byId.set(it.id, {subj, ...it}));
+        (gradeObj[subj]||[]).forEach(it=> byId.set(String(it.id), {subj, ...it}));
       });
-      const planItems = plan.map(id => (id && byId.get(id)) ? byId.get(id) : null);
+      const planItems = planIds.map(id => (id && byId.get(String(id))) ? byId.get(String(id)) : null);
 
-      // ---------- Premium Excel Template ----------
       const wb = new ExcelJS.Workbook();
       wb.creator = "Altınküre";
       wb.created = new Date();
       const ws = wb.addWorksheet("Program");
 
       ws.pageSetup = {
-        paperSize: 9, // A4
+        paperSize: 9,
         orientation: "landscape",
         fitToPage: true,
         fitToWidth: 1,
@@ -519,30 +525,20 @@ async function fetchFirstJson(candidates) {
 
       const DARK = "0B1B2B";
       const WHITE = "FFFFFF";
-
       const SUBJECT_META = {
         "Matematik":      { code:"MAT", fill:"DDEBFF" },
         "Türkçe":        { code:"TR",  fill:"FDE3D1" },
         "Fen Bilimleri":  { code:"FEN", fill:"DFF5E1" },
         "Sosyal Bilgiler":{ code:"SOS", fill:"E6E0FF" },
+        "İnkılap Tarihi": { code:"İNK", fill:"E6E0FF" },
         "T.C. İnkılap Tarihi ve Atatürkçülük": { code:"İNK", fill:"E6E0FF" },
         "Din Kültürü":    { code:"DİN", fill:"DFF5F1" },
         "İngilizce":      { code:"ENG", fill:"F7D9FF" },
       };
-
       const DAY_LABELS = ["Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi","Pazar"];
 
-      const cols2 = [
-        { width:14 }, // A Gün
-        { width:30 }, // B 1.Ders
-        { width:6  }, // C Soru
-        { width:30 }, // D 2.Ders
-        { width:6  }, // E Soru
-      ];
-      const cols3 = cols2.concat([
-        { width:30 }, // F 3.Ders
-        { width:6  }, // G Soru
-      ]);
+      const cols2 = [{ width:14 },{ width:30 },{ width:6  },{ width:30 },{ width:6  }];
+      const cols3 = cols2.concat([{ width:30 },{ width:6  }]);
       ws.columns = (perDay===3 ? cols3 : cols2);
 
       function fill(cell, hex){ cell.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF"+hex.replace("#","")}}; }
@@ -566,7 +562,6 @@ async function fetchFirstJson(candidates) {
       const lastColLetter = (perDay===3) ? "G" : "E";
       const lastColIdx = (perDay===3) ? 7 : 5;
 
-      // Row 1
       ws.mergeCells(`A1:${lastColLetter}1`);
       ws.getRow(1).height = 22;
       ws.getCell("A1").value = "ALTINKÜRE ORTAOKULU";
@@ -574,7 +569,6 @@ async function fetchFirstJson(candidates) {
       font(ws.getCell("A1"), {bold:true, color:{argb:"FF"+WHITE}, size:13});
       ws.getCell("A1").alignment = {vertical:"middle", horizontal:"left"};
 
-      // Row 2
       ws.mergeCells(`A2:${lastColLetter}2`);
       ws.getRow(2).height = 18;
       ws.getCell("A2").value = `Öğrenci Bazlı Haftalık Çalışma Programı | ${st.classKey} • No: ${st.num||""} • ${st.name}`;
@@ -584,7 +578,6 @@ async function fetchFirstJson(candidates) {
 
       ws.getRow(3).height = 6;
 
-      // Header row 4
       ws.getRow(4).height = 20;
       ws.getCell("A4").value = "Gün";
       ws.getCell("B4").value = "1. Ders";
@@ -602,7 +595,6 @@ async function fetchFirstJson(candidates) {
         center(ws.getCell(addr));
       });
 
-      // Day rows 5-11
       const startRow = 5;
       for(let i=0;i<DAY_LABELS.length;i++){
         const dayName = DAY_LABELS[i];
@@ -615,7 +607,7 @@ async function fetchFirstJson(candidates) {
         center(ws.getCell(`A${r}`));
 
         const isActive = activeDays.includes(i);
-        const dayIndex = activeDays.indexOf(i); // -1 if not active
+        const dayIndex = activeDays.indexOf(i);
 
         for(let k=0;k<perDay;k++){
           const col = (k===0?"B":k===1?"D":"F");
@@ -644,7 +636,7 @@ async function fetchFirstJson(candidates) {
             continue;
           }
 
-          const meta = SUBJECT_META[item.subj] || {code:item.subj.slice(0,3).toUpperCase(), fill:"FFFFFF"};
+          const meta = SUBJECT_META[item.subj] || {code:(item.subj||"").slice(0,3).toUpperCase(), fill:"FFFFFF"};
           const title = `${meta.code} • ${item.subj}`;
           const topic = (item.text||"").toString().trim();
           cell.value = title + "\n" + topic;
@@ -663,8 +655,7 @@ async function fetchFirstJson(candidates) {
       const tableLastRow = startRow + 6;
       setBorder(4,1,tableLastRow,lastColIdx);
 
-      // Uyarı bandı (her programda sabit)
-      const uRow = tableLastRow + 2; // 13
+      const uRow = tableLastRow + 2;
       ws.getRow(uRow).height = 18;
       ws.mergeCells(`A${uRow}:${lastColLetter}${uRow}`);
       ws.getCell(`A${uRow}`).value = "Uyarı: Ödevleri aksatmayacak şekilde, seçtiğin kazanımlara çalışıyorsun. Soru çözerek konuları pekiştiriyorsun.";
@@ -673,7 +664,6 @@ async function fetchFirstJson(candidates) {
       ws.getCell(`A${uRow}`).alignment = {vertical:"middle", horizontal:"left", wrapText:true};
       setBorder(uRow,1,uRow,lastColIdx);
 
-      // Ek not (soru hedefi / manuel not)
       const extraNote = [manualQText, manualQNote ? ("Not: " + manualQNote) : ""].filter(Boolean).join("\n");
       if(extraNote){
         const nRow = uRow + 1;
@@ -686,8 +676,7 @@ async function fetchFirstJson(candidates) {
         setBorder(nRow,1,nRow,lastColIdx);
       }
 
-      // İmza satırı
-      const sRow = uRow + 2; // 15
+      const sRow = uRow + 2;
       ws.getRow(sRow).height = 18;
       const midColLetter = (perDay===3) ? "D" : "C";
       ws.mergeCells(`A${sRow}:${midColLetter}${sRow}`);
@@ -700,53 +689,13 @@ async function fetchFirstJson(candidates) {
       ws.getCell(`${String.fromCharCode(midColLetter.charCodeAt(0)+1)}${sRow}`).alignment = {vertical:"middle", horizontal:"left"};
       setBorder(sRow,1,sRow,lastColIdx);
 
-      // Download
       const buf = await wb.xlsx.writeBuffer();
       const safeName = (st.name||"ogrenci").replace(/[^\w\s\-ĞÜŞİÖÇğüşıöç]/g,"").trim().replace(/\s+/g,"_");
       const safeNum = (st.num||"").toString().trim();
       const filename = `Program_${st.classKey.replace(/\s+/g,"")}_${safeNum || "No"}_${safeName}.xlsx`;
       saveAs(new Blob([buf], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}), filename);
-      toast("Excel indirildi.","ok");
     }
 
-
-    function thickBorder(){
-      const s = {style:"thick", color:{argb:"FF1F3158"}};
-      return {top:s,left:s,bottom:s,right:s};
-    }
-    function thinBorder(){
-      const s = {style:"thin", color:{argb:"FF1F3158"}};
-      return {top:s,left:s,bottom:s,right:s};
-    }
-
-    function getDateText(){
-      const mode = el("dateMode").value;
-      if(mode==="none") return "";
-      if(mode==="today"){
-        const d = new Date();
-        const dd = String(d.getDate()).padStart(2,"0");
-        const mm = String(d.getMonth()+1).padStart(2,"0");
-        const yy = d.getFullYear();
-        return `${dd}.${mm}.${yy}`;
-      }
-      const v = el("dateInput").value;
-      if(!v) return "";
-      const [yy,mm,dd] = v.split("-");
-      return `${dd}.${mm}.${yy}`;
-    }
-
-    async function fetchAsDataURL(url){
-      const r = await fetch(url, {cache:"no-store"});
-      if(!r.ok) return null;
-      const blob = await r.blob();
-      return await new Promise((res)=>{
-        const fr = new FileReader();
-        fr.onload = ()=>res(fr.result);
-        fr.readAsDataURL(blob);
-      });
-    }
-
-    // ---- events
     function hook(){
       el("dateMode").addEventListener("change", ()=>{
         el("dateInput").disabled = (el("dateMode").value !== "manual");
@@ -778,7 +727,6 @@ async function fetchFirstJson(candidates) {
       });
 
       el("selAll").addEventListener("click", ()=>{
-        // check all visible
         el("outList").querySelectorAll("input[type=checkbox]").forEach(ch=>{
           if(!ch.checked) ch.click();
         });
@@ -805,9 +753,10 @@ async function fetchFirstJson(candidates) {
       initDays();
       fillGradeOptions();
 
-      // load jsons from repo root
-      STUDENTS = await fetchFirstJson(["students.json"]);
-      OUTCOMES = await fetchFirstJson(["kazanimlar.json","kazanımlar.json","kazanımlar.json"]);
+      const rawStudents = await fetchFirstJson(["students.json"]);
+      STUDENTS = normalizeStudents(rawStudents);
+
+      OUTCOMES = await fetchFirstJson(["kazanımlar.json","kazanimlar.json","kazanımlar.json","kazanımlar.json"]);
 
       fillSectionOptions();
       fillStudentOptions();
@@ -820,7 +769,7 @@ async function fetchFirstJson(candidates) {
 
     boot().catch(err=>{
       console.error(err);
-      alert("Gerekli dosyalar yüklenemedi.\n\nKontrol: students.json ve kazanimlar.json (veya kazanımlar.json) repo kök dizininde olmalı.");
+      alert("Gerekli dosyalar yüklenemedi.\n\nKontrol: students.json ve kazanımlar.json (veya kazanimlar.json) repo kök dizininde olmalı.");
     });
   </script>
 </body>
