@@ -189,34 +189,57 @@
   return new URL(rel, window.location.href).toString();
 }
 
-async function fetchFirstJson(candidates) {
-  const list = Array.isArray(candidates) ? candidates : [candidates];
-  let lastErr = null;
-
-  // GitHub Pages fallback: bazı cihazlarda Türkçe karakterli dosya adları / relative fetch sorun çıkarabiliyor.
-  // Bu yüzden önce aynı origin'den dener; olmazsa raw.githubusercontent.com üzerinden dener.
-  const owner = (location.hostname || "").split(".")[0]; // burakkteacher
-  const repo = (location.pathname.split("/").filter(Boolean)[0]) || ""; // altinkure-manuel-program
+async function fetchFirstJson(candidates){
+  const {owner, repo} = guessRepoInfo();
+  // Always try same-origin relative first (GitHub Pages should serve JSON).
+  // If that returns HTML/404, fallback to raw.githubusercontent.com.
   const rawBase = (owner && repo) ? `https://raw.githubusercontent.com/${owner}/${repo}/main/` : null;
 
-  for (const rel of list) {
-    const tryUrls = [];
-    // 1) Same-origin relative
-    tryUrls.push(resolveRelUrl(rel));
-    // 2) Raw fallback
-    if (rawBase) tryUrls.push(rawBase + encodeURIComponent(rel));
+  const tried = [];
 
-    for (const url of tryUrls) {
-      try {
-        const res = await fetch(url, { cache: "no-store" });
-        if (!res.ok) throw new Error(`${rel} fetch failed: ${res.status}`);
-        return await res.json();
-      } catch (e) {
-        lastErr = e;
-      }
+  async function tryOne(url){
+    tried.push(url);
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const ct = (res.headers.get("content-type") || "").toLowerCase();
+    const body = await res.text();
+
+    // GitHub sometimes returns an HTML error page (or 404 page) even with 200 in edge cases.
+    const looksHtml = ct.includes("text/html") || /^\s*</.test(body);
+    if (looksHtml) throw new Error("HTML response");
+
+    try {
+      return JSON.parse(body);
+    } catch (e) {
+      throw new Error("JSON parse error");
     }
   }
-  throw lastErr || new Error("JSON fetch failed");
+
+  async function tryCandidatesFor(rel){
+    const urls = [];
+    // relative (same-origin)
+    urls.push(resolveRelUrl(rel));
+    // raw fallback
+    if (rawBase){
+      urls.push(rawBase + rel);
+      urls.push(rawBase + encodeURI(rel));
+    }
+    for (const url of urls){
+      try {
+        return await tryOne(url);
+      } catch (e) { /* continue */ }
+    }
+    return null;
+  }
+
+  for (const rel of candidates){
+    const data = await tryCandidatesFor(rel);
+    if (data) return { data, used: rel, tried };
+  }
+
+  const err = new Error("LOAD_FAIL");
+  err.tried = tried;
+  throw err;
 }
 
 
@@ -809,7 +832,9 @@ async function fetchFirstJson(candidates) {
 
     boot().catch(err=>{
       console.error(err);
-      alert("Gerekli dosyalar yüklenemedi.\n\nKontrol: students.json ve kazanimlar.json (veya kazanımlar.json) repo kök dizininde olmalı.");
+      const tried = (err && err.tried && Array.isArray(err.tried)) ? err.tried : [];
+      const extra = tried.length ? (`\n\nDenediğim adresler:\n- ` + tried.join("\n- ")) : "";
+      alert("Gerekli dosyalar yüklenemedi.\n\nKontrol: students.json ve kazanimlar.json (veya kazanımlar.json) repo kök dizininde olmalı." + extra);
     });
   </script>
 </body>
