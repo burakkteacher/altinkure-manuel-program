@@ -391,15 +391,21 @@
   //  STUDENTS: load & render multi-select
   // ------------------------------------------------------------
   function sectionsForGrade(grade){
+    // students.json şeması:
+    // { grades: { "5": ["A","B"] }, classes: { "5-A":[{no,name},...] } }
+    if(STUDENTS && STUDENTS.grades && STUDENTS.grades[String(grade)]){
+      return (STUDENTS.grades[String(grade)] || []).map(String);
+    }
+    // fallback: classes anahtarlarından üret
     const keys = Object.keys((STUDENTS && STUDENTS.classes) ? STUDENTS.classes : {});
     const secs = keys
-      .filter(k => k.startsWith(grade+"::"))
-      .map(k => k.split("::")[1]);
+      .filter(k => k.startsWith(String(grade) + "-"))
+      .map(k => k.split("-")[1]);
     return [...new Set(secs)].sort((a,b)=>a.localeCompare(b,"tr"));
   }
 
   function getStudentsIn(grade, section){
-    const key = `${grade}::${section}`;
+    const key = `${grade}-${section}`;
     return (STUDENTS && STUDENTS.classes && STUDENTS.classes[key]) ? STUDENTS.classes[key] : [];
   }
 
@@ -407,7 +413,9 @@
     const grade = el("grade").value;
     const secSel = el("section");
     const secs = sectionsForGrade(grade);
-    secSel.innerHTML = secs.map(s=>`<option value="${escapeHtml(s)}">${grade}-${escapeHtml(s)}</option>`).join("") || `<option value="">-</option>`;
+    secSel.innerHTML = secs.length
+      ? secs.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(grade)}-${escapeHtml(s)}</option>`).join("")
+      : `<option value="">-</option>`;
   }
 
   function renderStudentList(){
