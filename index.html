@@ -81,6 +81,25 @@
         <select id="student"></select>
         <div class="tiny">Öğrenci listesi: <span class="badge">students.json</span> dosyasından okunur.</div>
 
+        <div style="margin-top:10px">
+          <label class="daychk" style="justify-content:space-between">
+            <span style="display:flex;align-items:center;gap:8px">
+              <input id="bulkMode" type="checkbox">
+              <span>Çoklu öğrenci seç</span>
+            </span>
+            <span class="badge">Toplu</span>
+          </label>
+          <div id="bulkBox" style="display:none;margin-top:8px">
+            <div class="toolbar" style="margin:0 0 8px">
+              <button class="ghost" type="button" id="stuAll">Hepsini seç</button>
+              <button class="ghost" type="button" id="stuNone">Temizle</button>
+            </div>
+            <div class="list" id="stuList" style="max-height:220px"></div>
+            <div class="tiny" style="margin-top:6px">Not: Toplu modda seçili öğrenciler için dosyalar <b>ZIP</b> olarak iner.</div>
+          </div>
+        </div>
+
+
         <div class="row">
           <div>
             <label>Tarih</label>
@@ -99,10 +118,7 @@
         <div class="row">
           <div>
             <label>Günde kaç ders?</label>
-            <select id="perDay">
-              <option value="2">2</option>
-              <option value="3">3</option>
-            </select>
+            <select id="perDay"><option value="2" selected>2</option><option value="3">3</option></select>
 
             <div class="tiny" style="margin-top:10px">Soru hedefi (opsiyonel)</div>
             <input id="manualQ" type="number" min="0" placeholder="örn. 50" style="margin-top:6px"/>
@@ -145,6 +161,7 @@
 
         <div style="margin-top:12px" class="toolbar">
           <button class="primary" id="downloadXlsx">Excel indir</button>
+          <button class="gold" id="downloadPdf">PDF indir</button>
         </div>
         <div class="tiny" style="margin-top:8px">
           Not: Bu sürüm analiz yüklemez. Öğretmen manuel seçer ve günlere yerleştirir.
@@ -176,6 +193,9 @@
   <!-- libs -->
   <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
 
   <script>
     // ---- CONFIG
@@ -189,9 +209,18 @@
       "T.C. İnkılap Tarihi ve Atatürkçülük":"🏛️",
       "Din Kültürü":"🤲",
       "İngilizce":"🇬🇧",
-      "default":"📌"
+      "default":"📝"
     };
-
+    const SUBJECT_COLORS = {
+      "Matematik":"FF2C6CFF",
+      "Türkçe":"FFFFB020",
+      "Fen Bilimleri":"FF25D366",
+      "Sosyal Bilgiler":"FF9B59B6",
+      "İnkılap Tarihi":"FF9B59B6",
+      "Din Kültürü":"FF00BFA6",
+      "İngilizce":"FFFF5AA2",
+      "default":"FF1F3158"
+    };
 
     // ---- STATE
     let STUDENTS = null;   // students.json
@@ -306,6 +335,34 @@
       sel.value = "";
     }
 
+
+    function renderBulkStudentList(sectionKey, list){
+      const box = el("stuList");
+      if(!box) return;
+      box.innerHTML = "";
+      (list||[]).forEach((x, idx)=>{
+        const num = (x.num ?? x.no ?? x.number ?? x.Numara ?? x["Numara"] ?? x["No"] ?? "").toString().trim();
+        const name = (x.name ?? x.adi ?? x.Ad ?? x["Adı"] ?? x["Adi"] ?? "").toString().trim();
+        const numTxt = (!num || String(num).toLowerCase()==="undefined" || String(num).toLowerCase()==="nan") ? "-" : num;
+        const label = `${sectionKey} • ${numTxt} • ${name || "-"}`;
+        const row = document.createElement("div");
+        row.className = "item";
+        row.style.alignItems = "center";
+        row.innerHTML = `
+          <input class="chk" type="checkbox" data-idx="${idx}">
+          <div class="itxt" style="font-size:13px">${escapeHtml(label)}</div>
+        `;
+        box.appendChild(row);
+      });
+    }
+
+    function getBulkSelectedIndices(){
+      const checks = el("stuList") ? el("stuList").querySelectorAll("input[type=checkbox]") : [];
+      const out = [];
+      checks.forEach(ch=>{ if(ch.checked) out.push(parseInt(ch.dataset.idx,10)); });
+      return out.filter(Number.isFinite);
+    }
+
     function getStudentInfo(){
       const sectionKey = el("section").value; // "5-A"
       const gradeKey = (sectionKey.split("-")[0] || el("grade").value || "").trim();
@@ -323,6 +380,24 @@
         name: (name||"").toString().trim()
       };
     }
+
+    function getStudentInfoByIndex(idx){
+      const gradeKey = el("grade").value;
+      const sectionKey = el("section").value;
+      const key = `${gradeKey}-${sectionKey}`;
+      const list = (STUDENTS && STUDENTS.classes && STUDENTS.classes[key]) ? STUDENTS.classes[key] : [];
+      const s = Number.isFinite(idx) ? list[idx] : null;
+      const num = s ? (s.num ?? s.no ?? s.number ?? s.Numara ?? s["Numara"] ?? s["No"] ?? "") : "";
+      const name = s ? (s.name ?? s.adi ?? s.Ad ?? s["Adı"] ?? s["Adi"] ?? "") : "";
+      return {
+        gradeKey,
+        sectionKey: key,
+        num: (num||"").toString().trim(),
+        name: (name||"").toString().trim()
+      };
+    }
+
+
 
     function fillSubjectOptions(){
       const grade = el("grade").value;
@@ -544,16 +619,14 @@ function buildPlanOptions(){
 
     function toast(msg){ alert(msg); }
 
-    async function exportExcel(){
+    async function buildExcelForStudent(st){
       if(!STUDENTS || !OUTCOMES){ toast("Önce veriler yüklensin (students.json, kazanımlar.json)."); return; }
 
       const perDay = parseInt(el("perDay").value,10);
       const activeDays = getActiveDays();
       if(activeDays.length===0){ toast("En az 1 aktif gün seç."); return; }
 
-      const st = getStudentInfo();
-      if(!st || !st.classKey || !st.name){ toast("Önce öğrenci seç."); return; }
-
+      
       const manualQ = parseInt((el("manualQ").value || "").trim(), 10);
       const manualQText = (Number.isFinite(manualQ) && manualQ > 0) ? `Soru hedefi: ${manualQ}.` : "";
       const manualQNote = (el("manualQNote").value || "").trim();
@@ -633,7 +706,7 @@ function buildPlanOptions(){
 
       ws.mergeCells(`A2:${lastColLetter}2`);
       ws.getRow(2).height = 18;
-      ws.getCell("A2").value = `Öğrenci Bazlı Haftalık Çalışma Programı | ${st.classKey} • No: ${st.num||""} • ${st.name}`;
+      ws.getCell("A2").value = `Öğrenci Bazlı Haftalık Çalışma Programı | ${st.sectionKey} • No: ${st.num||""} • ${st.name}`;
       fill(ws.getCell("A2"), DARK);
       font(ws.getCell("A2"), {bold:true, color:{argb:"FF"+WHITE}, size:10});
       ws.getCell("A2").alignment = {vertical:"middle", horizontal:"left"};
@@ -758,9 +831,179 @@ function buildPlanOptions(){
       const buf = await wb.xlsx.writeBuffer();
       const safeName = (st.name||"ogrenci").replace(/[^\w\s\-ĞÜŞİÖÇğüşıöç]/g,"").trim().replace(/\s+/g,"_");
       const safeNum = (st.num||"").toString().trim();
-      const filename = `Program_${st.classKey.replace(/\s+/g,"")}_${safeNum || "No"}_${safeName}.xlsx`;
+      const filename = `Program_${st.sectionKey.replace(/\s+/g,"")}_${safeNum || "No"}_${safeName}.xlsx`;
       saveAs(new Blob([buf], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}), filename);
     }
+
+
+    async function exportExcel(){
+      if(!STUDENTS || !OUTCOMES){ toast("Önce veriler yüklensin (students.json, kazanimlar.json).","warn"); return; }
+
+      const bulk = !!el("bulkMode")?.checked;
+      const idxs = bulk ? getBulkSelectedIndices() : [parseInt(el("student").value,10)].filter(Number.isFinite);
+      if(!idxs.length){ toast("Önce öğrenci seç.","warn"); return; }
+
+      // Build once for selected plan
+      const perDay = 2;
+      const activeDays = getActiveDays();
+      if(activeDays.length===0){ toast("En az 1 aktif gün seç.","warn"); return; }
+
+      // zip if multiple
+      if(idxs.length > 1){
+        const zip = new JSZip();
+        for(const idx of idxs){
+          const st = getStudentInfoByIndex(idx);
+          if(!st || !st.name) continue;
+          const out = await buildExcelForStudent(st);
+          zip.file(out.filename, out.blob);
+        }
+        const zipBlob = await zip.generateAsync({type:"blob"});
+        saveAs(zipBlob, `Programlar_${el("grade").value}-${el("section").value}.zip`);
+        toast("ZIP indirildi.","ok");
+        return;
+      }
+
+      const st = getStudentInfoByIndex(idxs[0]);
+      if(!st || !st.name){ toast("Önce öğrenci seç.","warn"); return; }
+      const out = await buildExcelForStudent(st);
+      saveAs(out.blob, out.filename);
+      toast("Excel indirildi.","ok");
+    }
+
+
+    async function buildPdfForStudent(st){
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({orientation:"landscape", unit:"pt", format:"a4"});
+
+      const perDay = 2;
+      const activeDays = getActiveDays();
+      const manualQ = parseInt((el("manualQ")?.value || "").trim(), 10);
+      const manualQText = (Number.isFinite(manualQ) && manualQ > 0) ? `Soru hedefi: ${manualQ}` : "";
+      const teacherNote = (el("manualQNote")?.value || "").trim();
+
+      // map id -> item
+      const gradeKey = st.gradeKey;
+      const byId = new Map();
+      const gradeObj = (OUTCOMES.grades && OUTCOMES.grades[gradeKey]) ? OUTCOMES.grades[gradeKey] : {};
+      Object.keys(gradeObj).forEach(subj=>{
+        (gradeObj[subj]||[]).forEach(it=> byId.set(it.id, {subj, ...it}));
+      });
+
+      const rows = [];
+      const DAY_LABELS = ["Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi","Pazar"];
+
+      function fmtItem(id){
+        const item = id ? byId.get(id) : null;
+        if(!item) return "";
+        const icon = SUBJECT_ICONS[item.subj] || SUBJECT_ICONS["default"];
+        const topic = (item.text||"").toString().trim();
+        return `${icon} ${item.subj}\n${topic}`;
+      }
+
+      // build planItems linear in active days order
+      const planLinear = [];
+      activeDays.forEach(d=>{
+        const arr = plan[d] || ["",""];
+        planLinear.push(arr[0]||"", arr[1]||"");
+      });
+
+      for(let i=0;i<DAY_LABELS.length;i++){
+        const isActive = activeDays.includes(i);
+        const dayIndex = activeDays.indexOf(i);
+        const d1 = (isActive && planLinear[dayIndex*perDay]) ? planLinear[dayIndex*perDay] : "";
+        const d2 = (isActive && planLinear[dayIndex*perDay+1]) ? planLinear[dayIndex*perDay+1] : "";
+        rows.push([DAY_LABELS[i], fmtItem(d1), fmtItem(d2)]);
+      }
+
+      // header
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(14);
+      doc.text("ALTINKÜRE ORTAOKULU", 40, 40);
+      doc.setFontSize(11);
+      doc.setFont("helvetica","normal");
+      doc.text(`Öğrenci Bazlı Haftalık Çalışma Programı | ${st.sectionKey} • No: ${st.num||""} • ${st.name}`, 40, 62);
+
+      const extra = [manualQText, teacherNote ? ("Not: "+teacherNote) : ""].filter(Boolean).join("   |   ");
+      if(extra){
+        doc.setFontSize(10);
+        doc.text(extra, 40, 80);
+      }
+
+      doc.autoTable({
+        startY: 100,
+        head: [["Gün","1. Ders","2. Ders"]],
+        body: rows,
+        styles: {fontSize:9, cellPadding:6, valign:"middle"},
+        headStyles: {fillColor:[15,26,46]},
+        columnStyles: {0:{cellWidth:90}, 1:{cellWidth:310}, 2:{cellWidth:310}},
+        didParseCell: function(data){
+          if(data.section==="body" && data.column.index===0){
+            data.cell.styles.fillColor = [15,26,46];
+            data.cell.styles.textColor = [255,255,255];
+            data.cell.styles.fontStyle = "bold";
+          }
+        }
+      });
+
+      // warning band
+      const y = doc.lastAutoTable.finalY + 18;
+      doc.setFillColor(250,210,210);
+      doc.rect(40, y, 755, 22, "F");
+      doc.setTextColor(122,0,0);
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(10);
+      doc.text("Uyarı: Ödevleri aksatmayacak şekilde, seçtiğin kazanımlara çalışıyorsun. Soru çözerek konuları pekiştiriyorsun.", 48, y+15);
+
+      // signatures
+      const y2 = y + 38;
+      doc.setTextColor(20,20,20);
+      doc.setFont("helvetica","bold");
+      doc.text("Öğrenci imza:", 40, y2);
+      doc.text("Veli imza:", 420, y2);
+      doc.setDrawColor(31,49,88);
+      doc.line(130, y2+2, 380, y2+2);
+      doc.line(490, y2+2, 740, y2+2);
+
+      const safeName = (st.name||"ogrenci").replace(/[^\w\s\-ĞÜŞİÖÇğüşıöç]/g,"").trim().replace(/\s+/g,"_");
+      const safeNum = (st.num||"").toString().trim();
+      const filename = `Program_${st.sectionKey.replace(/\s+/g,"")}_${safeNum || "No"}_${safeName}.pdf`;
+      const blob = doc.output("blob");
+      return { filename, blob };
+    }
+
+    async function exportPdf(){
+      if(!STUDENTS || !OUTCOMES){ toast("Önce veriler yüklensin (students.json, kazanimlar.json).","warn"); return; }
+
+      const bulk = !!el("bulkMode")?.checked;
+      const idxs = bulk ? getBulkSelectedIndices() : [parseInt(el("student").value,10)].filter(Number.isFinite);
+      if(!idxs.length){ toast("Önce öğrenci seç.","warn"); return; }
+
+      const activeDays = getActiveDays();
+      if(activeDays.length===0){ toast("En az 1 aktif gün seç.","warn"); return; }
+
+      if(idxs.length > 1){
+        const zip = new JSZip();
+        for(const idx of idxs){
+          const st = getStudentInfoByIndex(idx);
+          if(!st || !st.name) continue;
+          const out = await buildPdfForStudent(st);
+          zip.file(out.filename, out.blob);
+        }
+        const zipBlob = await zip.generateAsync({type:"blob"});
+        saveAs(zipBlob, `Programlar_${el("grade").value}-${el("section").value}.zip`);
+        toast("ZIP indirildi.","ok");
+        return;
+      }
+
+      const st = getStudentInfoByIndex(idxs[0]);
+      if(!st || !st.name){ toast("Önce öğrenci seç.","warn"); return; }
+      const out = await buildPdfForStudent(st);
+      saveAs(out.blob, out.filename);
+      toast("PDF indirildi.","ok");
+    }
+
+
+
 
     function hook(){
       el("dateMode").addEventListener("change", ()=>{
@@ -777,6 +1020,20 @@ function buildPlanOptions(){
       el("section").addEventListener("change", ()=>{
         fillStudentOptions();
       });
+
+
+      el("bulkMode").addEventListener("change", ()=>{
+        const on = el("bulkMode").checked;
+        el("bulkBox").style.display = on ? "block" : "none";
+        el("student").disabled = on;
+      });
+      el("stuAll").addEventListener("click", ()=>{
+        el("stuList").querySelectorAll("input[type=checkbox]").forEach(ch=> ch.checked = true);
+      });
+      el("stuNone").addEventListener("click", ()=>{
+        el("stuList").querySelectorAll("input[type=checkbox]").forEach(ch=> ch.checked = false);
+      });
+
       el("subject").addEventListener("change", ()=>{
         fillUnitOptions();
         renderOutcomeList();
@@ -805,6 +1062,7 @@ function buildPlanOptions(){
       });
       el("autoFill").addEventListener("click", autoFillSequential);
       el("downloadXlsx").addEventListener("click", exportExcel);
+      el("downloadPdf").addEventListener("click", exportPdf);
     }
 
     function debounce(fn, ms){
