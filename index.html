@@ -97,12 +97,11 @@
     textarea{min-height:80px;resize:vertical}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     @media(max-width:540px){.row{grid-template-columns:1fr}}
-    .days{display:flex;flex-wrap:wrap;gap:8px}
-    @media(max-width:540px){.days{gap:8px}}
+    .days{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+    @media(max-width:540px){.days{grid-template-columns:repeat(4,1fr)}}
     .day{
       display:flex;align-items:center;justify-content:center;gap:8px;
-      border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff;
-      min-width:64px;
+      border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff;
       font-weight:700;font-size:13px;color:#1f2937;
       user-select:none;
     }
@@ -116,10 +115,9 @@
     .studentTop input{flex:1}
     .studentList{max-height:280px;overflow:auto}
     .stuRow{
-      display:flex;gap:10px;align-items:center;padding:10px;
+      display:flex;gap:10px;align-items:flex-start;padding:10px;
       border-bottom:1px solid rgba(231,233,238,.9);
     }
-    .stuRow input[type=checkbox]{width:18px;height:18px;flex:0 0 auto}
     .stuRow:last-child{border-bottom:none}
     .stuRow .meta{font-size:13px;line-height:1.25}
     .stuRow .meta b{display:block}
@@ -137,8 +135,7 @@
     .listTop{padding:10px;border-bottom:1px solid var(--line);display:flex;gap:10px;flex-wrap:wrap}
     .listTop>*{flex:1}
     .outList{max-height:320px;overflow:auto}
-    .item{display:flex;gap:10px;align-items:center;padding:10px;border-bottom:1px solid rgba(231,233,238,.9)}
-    .item input[type=checkbox]{width:18px;height:18px;flex:0 0 auto;margin-top:0}
+    .item{display:flex;gap:10px;align-items:flex-start;padding:10px;border-bottom:1px solid rgba(231,233,238,.9)}
     .item:last-child{border-bottom:none}
     .itag{min-width:72px;text-align:center;font-size:11px;padding:5px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:#fff}
     .itxt{font-size:13px;line-height:1.25}
@@ -172,26 +169,13 @@
     .panel{
       padding:12px 12px 14px;border-top:1px solid var(--line);background:#fff
     }
-    .plan{overflow:auto;border:1px solid var(--line);border-radius:14px;max-height:520px}
-    table{border-collapse:collapse;width:100%;table-layout:fixed}
+    .plan{overflow:auto;border:1px solid var(--line);border-radius:14px}
+    table{border-collapse:collapse;width:100%;table-layout:auto;min-width:860px}
     th,td{border:2px solid #22304a;padding:10px;vertical-align:top}
     th{background:var(--tableHead);color:#fff;font-size:12px;text-transform:uppercase;letter-spacing:.5px}
     td{background:#fff}
     td select{width:100%;padding:9px 10px;border-radius:12px;border:1px solid var(--line)}
-    td select:disabled{background:#f2f4f7;color:var(--muted);cursor:not-allowed}
     tbody tr{height:74px}
-
-    .cellWrap{display:flex;gap:8px;align-items:center}
-    .cellWrap select.lessonSel{flex:1;min-width:0}
-    .cellWrap select.qSel{width:86px;flex:0 0 auto}
-    .cellWrap .dragHandle{width:30px;height:34px;border:1px solid var(--line);border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:grab;user-select:none;color:var(--muted)}
-    .cellWrap .dragHandle:active{cursor:grabbing}
-tbody tr{height:74px}
-
-    /* Günler görünür kalsın (sticky başlık + ilk sütun) */
-    .plan thead th{position:sticky;top:0;z-index:3}
-    .plan thead th:first-child{left:0;z-index:4}
-    .plan tbody td:first-child{position:sticky;left:0;z-index:2;background:#fff}
     .note{
       margin-top:10px;border:2px solid #22304a;border-radius:14px;padding:12px;
       background: linear-gradient(180deg, rgba(199,162,58,.10), rgba(58,124,255,.06));
@@ -208,7 +192,7 @@ tbody tr{height:74px}
         <img src="logo.png" alt="Altınküre Ortaokulu" onerror="this.style.display='none'"/>
         <div class="t">
           <h1>Altınküre Ortaokulu • Manuel Program v2</h1>
-          <div class="sub">PDF yok • Excel var • Çoklu öğrenci seçimi • Sayfa uzamaz (tek tablo, çoklu öğrenci)</div>
+          <div class="sub">PDF yok • Excel var • Çoklu öğrenci seçimi • Sayfa uzamaz (accordion)</div>
         </div>
       </div>
       <div class="actions">
@@ -285,22 +269,6 @@ tbody tr{height:74px}
 
         <label>Aktif günler</label>
         <div class="days" id="days"></div>
-        <div style="display:grid;gap:8px;margin-top:10px">
-          <label style="display:flex;align-items:center;gap:10px;margin:0;color:var(--muted);font-size:13px">
-            <input type="checkbox" id="showSubjectInOptions" checked style="width:18px;height:18px"/>
-            Tabloda ders adı da görünsün
-          </label>
-          <label style="display:flex;align-items:center;gap:10px;margin:0;color:var(--muted);font-size:13px">
-            <input type="checkbox" id="noRepeatSameDay" style="width:18px;height:18px"/>
-            Aynı gün ders tekrarı olmasın (opsiyonel)
-          </label>
-        </div>
-
-        <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-          <label style="margin:0;color:var(--muted);font-size:12px;display:flex;gap:8px;align-items:center">
-            <input type="checkbox" id="showSubject" checked style="width:auto"/> Tabloda ders adı da görünsün
-          </label>
-        </div>
 
         <div class="divider"></div>
 
@@ -336,7 +304,7 @@ tbody tr{height:74px}
       <!-- RIGHT -->
       <div class="card">
         <div class="rightTitle">
-          <h2>Önizleme (Ortak tablo)</h2>
+          <h2>Önizleme (Seçilen öğrenciler)</h2>
           <div class="stats">
             <span class="pill">Seçili öğrenci: <b id="stuCount">0</b></span>
             <span class="pill">Seçili kazanım: <b id="outCount">0</b></span>
@@ -344,7 +312,7 @@ tbody tr{height:74px}
           </div>
         </div>
 
-        <div id="preview"></div>
+        <div class="accordion" id="preview"></div>
 
         <div class="note">
           <b>Bilgilendirme</b>
@@ -358,32 +326,82 @@ tbody tr{height:74px}
 
 <script>
   // ------------------------------------------------------------
-  //  DATA + HELPERS
+  //  DATA LOADING
   // ------------------------------------------------------------
   const DAYS = ["Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi","Pazar"];
   const DAY_ABBR = ["Pzt","Sal","Çar","Per","Cum","Cts","Paz"];
 
   const SUBJECT_META = {
-    "Matematik":      { code:"MAT", emoji:"🧮", fill:"F2F7FF" },
-    "Türkçe":        { code:"TR",  emoji:"📚", fill:"FFF4EC" },
-    "Fen Bilimleri":  { code:"FEN", emoji:"🔬", fill:"F1FFF6" },
-    "Sosyal Bilgiler":{ code:"SOS", emoji:"🌍", fill:"F7F2FF" },
-    "İnkılap Tarihi": { code:"İNK", emoji:"🌍", fill:"F7F2FF" },
-    "Din Kültürü":    { code:"DİN", emoji:"🤲", fill:"FFFBEA" },
-    "İngilizce":      { code:"ENG", emoji:"🇬🇧", fill:"FFF0F7" },
-    "default":        { code:"DERS", emoji:"",  fill:"F5F6F8" }
+    "Matematik":      { code:"MAT", emoji:"🧮", fill:"DDEBFF" },
+    "Türkçe":        { code:"TR",  emoji:"📚", fill:"FFE7D6" },
+    "Fen Bilimleri":  { code:"FEN", emoji:"🔬", fill:"E7FFEF" },
+    "Sosyal Bilgiler":{ code:"SOS", emoji:"🌍", fill:"F0E7FF" },
+    "İnkılap Tarihi": { code:"İNK", emoji:"🌍", fill:"F0E7FF" },
+    "Din Kültürü":    { code:"DİN", emoji:"🤲", fill:"FFF7D6" },
+    "İngilizce":      { code:"ENG", emoji:"🇬🇧", fill:"FFE3F1" },
+    "default":        { code:"DERS", emoji:"", fill:"F3F4F6" }
   };
+  // Ders filtresi (sistemden tamamen kaldırılacak dersler)
+  const EXCLUDED_SUBJECTS = new Set([
+    "Arapça",
+    "Seçmeli Arapça",
+    "Peygamberimizin Hayatı"
+  ]);
 
-  const el = (id)=>document.getElementById(id);
-  const escapeHtml = (s)=>String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
-  const resolveRelUrl = (rel)=>new URL(rel, window.location.href).toString();
+  function isExcludedSubject(s){
+    return EXCLUDED_SUBJECTS.has(String(s||"").trim());
+  }
 
+  function sanitizeOutcomes(){
+    if(!OUTCOMES || !OUTCOMES.grades) return;
+    Object.keys(OUTCOMES.grades).forEach(g=>{
+      const gradeObj = OUTCOMES.grades[g] || {};
+      Object.keys(gradeObj).forEach(subj=>{
+        if(isExcludedSubject(subj)) delete gradeObj[subj];
+      });
+    });
+  }
+
+  function getFilteredOutcomePool(){
+    const grade = el("grade").value;
+    const subj = el("subject").value;
+    const unit = el("unit").value;
+    const q = (el("q").value || "").trim().toLocaleLowerCase("tr-TR");
+
+    const gradeObj = (OUTCOMES && OUTCOMES.grades) ? (OUTCOMES.grades[grade] || {}) : {};
+    let pool = [];
+
+    if(subj==="__all__"){
+      Object.entries(gradeObj).forEach(([s,arr])=>{
+        if(isExcludedSubject(s)) return;
+        (arr||[]).forEach(it=>pool.push({...it, subject:s, grade}));
+      });
+    }else{
+      if(!isExcludedSubject(subj)){
+        (gradeObj[subj]||[]).forEach(it=>pool.push({...it, subject:subj, grade}));
+      }
+    }
+
+    if(unit!=="__all__") pool = pool.filter(it => (it.unit||"") === unit);
+    if(q){
+      pool = pool.filter(it =>
+        (it.text||"").toLocaleLowerCase("tr-TR").includes(q) ||
+        (it.unit||"").toLocaleLowerCase("tr-TR").includes(q)
+      );
+    }
+    return pool;
+  }
+
+
+  function el(id){ return document.getElementById(id); }
+  function escapeHtml(s){ return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;"); }
+  function resolveRelUrl(rel){ return new URL(rel, window.location.href).toString(); }
   async function fetchFirstJson(cands){
     const list = Array.isArray(cands) ? cands : [cands];
     let lastErr = null;
     for(const rel of list){
       try{
-        const res = await fetch(resolveRelUrl(rel), { cache:"no-store" });
+        const res = await fetch(resolveRelUrl(rel), { cache: "no-store" });
         if(!res.ok) throw new Error(`${rel} fetch failed: ${res.status}`);
         return await res.json();
       }catch(e){ lastErr = e; }
@@ -391,93 +409,56 @@ tbody tr{height:74px}
     throw lastErr || new Error("JSON fetch failed");
   }
 
-  function toast(msg){
-    // minimal, non-intrusive
-    const t = document.createElement("div");
-    t.textContent = msg;
-    t.style.cssText = "position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:9999;background:#111827;color:#fff;padding:10px 12px;border-radius:12px;font-weight:800;font-size:13px;box-shadow:0 18px 40px rgba(0,0,0,.18);opacity:.98";
-    document.body.appendChild(t);
-    setTimeout(()=>{ t.style.opacity="0"; t.style.transition="opacity .25s ease"; }, 1400);
-    setTimeout(()=>t.remove(), 1700);
-  }
-
-  // ------------------------------------------------------------
-  //  DATA
-  // ------------------------------------------------------------
   let STUDENTS = null;
   let OUTCOMES = null;
 
   // ------------------------------------------------------------
   //  STATE
   // ------------------------------------------------------------
-  // selected outcomes: id -> {id,text,unit,subject,grade}
-  let selectedOut = new Map();
+  let selectedOut = new Map(); // id -> {id,text,unit,subject,grade}
+  let planByStudent = new Map(); // studentKey -> { [dayIdx]: [ids...] }
 
-  // shared plan: dayIdx -> Array(perDay) of { v: string, q: string }
-  let sharedPlan = {};
+  function studentKey(st){ return `${st.grade}::${st.section}::${st.num}::${st.name}`; }
 
-  // drag state
-  let dragFrom = null; // {day, slot}
-
-  // ------------------------------------------------------------
-  //  DAYS UI (always visible; inactive => disables row)
-  // ------------------------------------------------------------
   function initDays(){
     const box = el("days");
     box.innerHTML = "";
     DAYS.forEach((d,i)=>{
       const lab = document.createElement("label");
       lab.className = "day";
-      lab.innerHTML = `<input type="checkbox" data-day="${i}" ${i<=4 ? "checked":""}> ${DAY_ABBR[i]}`;
+      lab.innerHTML = `<input type="checkbox" data-day="${i}" checked> ${DAY_ABBR[i]}`;
       box.appendChild(lab);
     });
   }
-  function getActiveDaysSet(){
-    const s = new Set();
+  function getActiveDays(){
+    const act = [];
     el("days").querySelectorAll("input[type=checkbox]").forEach(c=>{
-      if(c.checked) s.add(parseInt(c.dataset.day,10));
+      if(c.checked) act.push(parseInt(c.dataset.day,10));
     });
-    return s;
+    return act;
   }
 
   // ------------------------------------------------------------
-  //  STUDENTS
+  //  STUDENTS: load & render multi-select
   // ------------------------------------------------------------
   function sectionsForGrade(grade){
-    if(STUDENTS && STUDENTS.grades && STUDENTS.grades[String(grade)]){
-      return (STUDENTS.grades[String(grade)] || []).map(String);
-    }
     const keys = Object.keys((STUDENTS && STUDENTS.classes) ? STUDENTS.classes : {});
     const secs = keys
-      .filter(k => k.startsWith(String(grade) + "-"))
-      .map(k => k.split("-")[1]);
+      .filter(k => k.startsWith(grade+"::"))
+      .map(k => k.split("::")[1]);
     return [...new Set(secs)].sort((a,b)=>a.localeCompare(b,"tr"));
   }
 
   function getStudentsIn(grade, section){
-    const key = `${grade}-${section}`;
-    const arr = (STUDENTS && STUDENTS.classes && STUDENTS.classes[key]) ? STUDENTS.classes[key] : [];
-    // normalize + sort
-    const norm = arr.map(x=>{
-      const num = (x.num ?? x.no ?? x.number ?? x.Numara ?? x["Numara"] ?? x["No"] ?? "").toString().trim();
-      const name = (x.name ?? x.adi ?? x.Ad ?? x["Adı"] ?? x["Adi"] ?? "").toString().trim();
-      return {num, name};
-    });
-    norm.sort((a,b)=>{
-      const an = parseInt(a.num,10), bn = parseInt(b.num,10);
-      if(!Number.isNaN(an) && !Number.isNaN(bn) && an!==bn) return an-bn;
-      return (a.name||"").localeCompare(b.name||"","tr");
-    });
-    return norm;
+    const key = `${grade}::${section}`;
+    return (STUDENTS && STUDENTS.classes && STUDENTS.classes[key]) ? STUDENTS.classes[key] : [];
   }
 
   function fillSection(){
     const grade = el("grade").value;
     const secSel = el("section");
     const secs = sectionsForGrade(grade);
-    secSel.innerHTML = secs.length
-      ? secs.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(grade)}-${escapeHtml(s)}</option>`).join("")
-      : `<option value="">-</option>`;
+    secSel.innerHTML = secs.map(s=>`<option value="${escapeHtml(s)}">${grade}-${escapeHtml(s)}</option>`).join("") || `<option value="">-</option>`;
   }
 
   function renderStudentList(){
@@ -487,26 +468,27 @@ tbody tr{height:74px}
 
     const list = getStudentsIn(grade, section);
     const box = el("studentList");
-    const prev = new Set(getSelectedStudents().map(s=>`${s.num}::${s.name}`));
-
     box.innerHTML = "";
+
     list.forEach((x, idx)=>{
-      const hay = `${x.num} ${x.name}`.toLocaleLowerCase("tr-TR");
+      const num = (x.num ?? x.no ?? x.number ?? x.Numara ?? x["Numara"] ?? x["No"] ?? "").toString().trim();
+      const name = (x.name ?? x.adi ?? x.Ad ?? x["Adı"] ?? x["Adi"] ?? "").toString().trim();
+      const hay = `${num} ${name}`.toLocaleLowerCase("tr-TR");
       if(search && !hay.includes(search)) return;
 
       const row = document.createElement("div");
       row.className = "stuRow";
-      const key = `${x.num}::${x.name}`;
       row.innerHTML = `
-        <input type="checkbox" class="stuChk" data-idx="${idx}" ${prev.has(key) ? "checked":""}>
+        <input type="checkbox" class="stuChk" data-idx="${idx}">
         <div class="meta">
-          <b>${escapeHtml(x.name || "-")}</b>
-          <span>${escapeHtml(grade)}-${escapeHtml(section)} • No: ${escapeHtml(x.num || "-")}</span>
+          <b>${escapeHtml(name || "-")}</b>
+          <span>${escapeHtml(grade)}-${escapeHtml(section)} • No: ${escapeHtml(num || "-")}</span>
         </div>
       `;
       box.appendChild(row);
     });
 
+    // keep previous checks if possible (best effort)
     updateCounts();
     renderPreview();
   }
@@ -520,77 +502,57 @@ tbody tr{height:74px}
       const idx = parseInt(ch.dataset.idx,10);
       const x = list[idx];
       if(!x) return;
-      selected.push({grade, section, num:x.num, name:x.name});
+      const num = (x.num ?? x.no ?? x.number ?? x.Numara ?? x["Numara"] ?? x["No"] ?? "").toString().trim();
+      const name = (x.name ?? x.adi ?? x.Ad ?? x["Adı"] ?? x["Adi"] ?? "").toString().trim();
+      selected.push({grade, section, num, name});
     });
     return selected;
   }
 
   // ------------------------------------------------------------
-  //  OUTCOMES LIST
+  //  OUTCOMES: filters & list
   // ------------------------------------------------------------
-  function gradeOutcomesObj(){
-    const grade = el("grade").value;
-    return (OUTCOMES && OUTCOMES.grades) ? (OUTCOMES.grades[String(grade)] || {}) : {};
-  }
-
   function fillSubject(){
+    const grade = el("grade").value;
     const subjSel = el("subject");
-    const gradeObj = gradeOutcomesObj();
-    const subjects = Object.keys(gradeObj).sort((a,b)=>a.localeCompare(b,"tr"));
+    const gradeObj = (OUTCOMES && OUTCOMES.grades) ? (OUTCOMES.grades[grade] || {}) : {};
+    const subjects = Object.keys(gradeObj)
+      .filter(s=>!isExcludedSubject(s))
+      .sort((a,b)=>a.localeCompare(b,"tr"));
     subjSel.innerHTML = `<option value="__all__">Tümü</option>` + subjects.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("");
   }
 
   function fillUnit(){
+    const grade = el("grade").value;
     const subj = el("subject").value;
     const unitSel = el("unit");
-    const gradeObj = gradeOutcomesObj();
+    const gradeObj = (OUTCOMES && OUTCOMES.grades) ? (OUTCOMES.grades[grade] || {}) : {};
     let items = [];
     if(subj === "__all__"){
-      Object.values(gradeObj).forEach(arr=>items.push(...arr));
+      Object.entries(gradeObj).forEach(([s,arr])=>{
+        if(isExcludedSubject(s)) return;
+        items.push(...(arr||[]));
+      });
     }else{
-      items = gradeObj[subj] || [];
+      if(!isExcludedSubject(subj)) items = gradeObj[subj] || [];
     }
     const units = [...new Set(items.map(x=>x.unit||"").filter(Boolean))].sort((a,b)=>a.localeCompare(b,"tr"));
     unitSel.innerHTML = `<option value="__all__">Tümü</option>` + units.map(u=>`<option value="${escapeHtml(u)}">${escapeHtml(u)}</option>`).join("");
   }
 
   function renderOutcomeList(){
-    const grade = el("grade").value;
-    const subj = el("subject").value;
-    const unit = el("unit").value;
-    const q = (el("q").value || "").trim().toLocaleLowerCase("tr-TR");
-
-    const gradeObj = gradeOutcomesObj();
-    let pool = [];
-    if(subj==="__all__"){
-      Object.entries(gradeObj).forEach(([s,arr])=>{
-        arr.forEach(it=>pool.push({...it, subject:s, grade}));
-      });
-    }else{
-      (gradeObj[subj]||[]).forEach(it=>pool.push({...it, subject:subj, grade}));
-    }
-
-    if(unit!=="__all__") pool = pool.filter(it => (it.unit||"") === unit);
-    if(q){
-      pool = pool.filter(it =>
-        (it.text||"").toLocaleLowerCase("tr-TR").includes(q) ||
-        (it.unit||"").toLocaleLowerCase("tr-TR").includes(q)
-      );
-    }
-
+    const pool = getFilteredOutcomePool();
     const out = el("outList");
     out.innerHTML = "";
-    pool.slice(0,2000).forEach(it=>{
+
+    pool.slice(0,3000).forEach(it=>{
       const row = document.createElement("div");
       row.className = "item";
       const checked = selectedOut.has(it.id) ? "checked" : "";
       row.innerHTML = `
-        <input type="checkbox" class="outChk" data-id="${escapeHtml(it.id)}" ${checked}/>
-        <span class="itag">${escapeHtml(it.subject || "-")}</span>
-        <div class="itxt">
-          <b>${escapeHtml(it.unit || "")}</b>
-          <span>${escapeHtml(it.text || "")}</span>
-        </div>
+        <input class="outChk" type="checkbox" data-id="${escapeHtml(it.id)}" ${checked}>
+        <div class="itag">${escapeHtml(it.subject)}</div>
+        <div class="itxt"><b>${escapeHtml(it.unit||"")}</b><div>${escapeHtml(it.text||"")}</div></div>
       `;
       out.appendChild(row);
     });
@@ -600,11 +562,20 @@ tbody tr{height:74px}
         const id = ch.dataset.id;
         const item = pool.find(x=>String(x.id)===String(id));
         if(!item) return;
-        if(ch.checked) selectedOut.set(item.id, item);
-        else selectedOut.delete(item.id);
+        if(ch.checked){
+          selectedOut.set(item.id, item);
+        }else{
+          selectedOut.delete(item.id);
+          // planda bu id varsa temizle
+          Object.keys(sharedPlan).forEach(dayIdx=>{
+            sharedPlan[dayIdx] = (sharedPlan[dayIdx]||[]).map(cell=>{
+              if(cell && cell.id && String(cell.id)===String(item.id)) return null;
+              return cell;
+            });
+          });
+        }
         updateCounts();
-        // options list changed => refresh table options, but keep current values
-        renderPreview(true);
+        renderPreview();
       });
     });
 
@@ -612,241 +583,142 @@ tbody tr{height:74px}
   }
 
   // ------------------------------------------------------------
-  //  PLAN (shared)
+  //  PLAN (per student)
   // ------------------------------------------------------------
-  function ensureSharedPlan(){
+  function ensurePlanFor(st){
+    const key = studentKey(st);
     const perDay = parseInt(el("perDay").value,10);
-    for(let d=0; d<7; d++){
-      if(!sharedPlan[d]) sharedPlan[d] = [];
-      // resize keeping existing
-      const arr = sharedPlan[d];
-      if(arr.length < perDay){
-        for(let i=arr.length;i<perDay;i++) arr.push({v:"", q:""});
-      }else if(arr.length > perDay){
-        sharedPlan[d] = arr.slice(0, perDay);
-      }
-      // normalize objects
-      sharedPlan[d] = sharedPlan[d].map(x=>({v:(x?.v||""), q:(x?.q||"")}));
-    }
+    const actDays = getActiveDays();
+
+    if(!planByStudent.has(key)) planByStudent.set(key, {});
+    const plan = planByStudent.get(key);
+
+    actDays.forEach(i=>{
+      if(!plan[i] || plan[i].length !== perDay) plan[i] = Array(perDay).fill("");
+    });
+    Object.keys(plan).forEach(k=>{
+      if(!actDays.includes(parseInt(k,10))) delete plan[k];
+    });
+    return plan;
   }
 
-  function subjectsForGrade(){
-    const gradeObj = gradeOutcomesObj();
-    const fromOut = Object.keys(gradeObj);
-    const fromMeta = Object.keys(SUBJECT_META).filter(k=>k!=="default");
-    const merged = [...new Set([...fromOut, ...fromMeta])].filter(Boolean);
-    merged.sort((a,b)=>a.localeCompare(b,"tr"));
-    return merged;
-  }
-
-  function buildLessonOptions(currentVal){
-    const showSub = el("showSubjectInOptions") ? el("showSubjectInOptions").checked : true;
-
-    const subjects = subjectsForGrade();
-    const outItems = Array.from(selectedOut.values()).slice();
-    outItems.sort((a,b)=>
+  function buildOptionsHtml(current){
+    const items = Array.from(selectedOut.values()).filter(it=>!isExcludedSubject(it.subject));
+    items.sort((a,b)=>
       (a.subject||"").localeCompare(b.subject||"tr") ||
       (a.unit||"").localeCompare(b.unit||"tr") ||
       (a.text||"").localeCompare(b.text||"tr")
     );
-
     const groups = {};
-    outItems.forEach(it=>{
+    items.forEach(it=>{
       if(!groups[it.subject]) groups[it.subject]=[];
       groups[it.subject].push(it);
     });
 
     let html = `<option value="">(Boş)</option>`;
-
-    // subject-only first
-    html += `<optgroup label="Ders (kazanımsız)">`;
-    subjects.forEach(s=>{
-      const v = `SUBJ|${s}`;
-      const sel = (currentVal===v) ? "selected" : "";
-      html += `<option value="${escapeHtml(v)}" ${sel}>${escapeHtml(s)}</option>`;
-    });
-    html += `</optgroup>`;
-
-    // outcomes
-    if(outItems.length){
-      Object.keys(groups).sort((a,b)=>a.localeCompare(b,"tr")).forEach(subj=>{
-        html += `<optgroup label="${escapeHtml(subj)} (kazanım)">`;
-        groups[subj].forEach(it=>{
-          const v = `OUT|${it.id}`;
-          const labelCore = `${it.unit ? it.unit+" — " : ""}${it.text||""}`.trim();
-          const label = showSub ? `${subj} • ${labelCore}` : labelCore;
-          const sel = (currentVal===v) ? "selected" : "";
-          html += `<option value="${escapeHtml(v)}" ${sel}>${escapeHtml(label)}</option>`;
-        });
-        html += `</optgroup>`;
+    Object.keys(groups).sort((a,b)=>a.localeCompare(b,"tr")).forEach(subj=>{
+      html += `<optgroup label="${escapeHtml(subj)}">`;
+      groups[subj].forEach(it=>{
+        const label = `${it.unit ? it.unit+" — " : ""}${it.text}`;
+        const sel = String(current)===String(it.id) ? "selected" : "";
+        html += `<option value="${escapeHtml(it.id)}" ${sel}>${escapeHtml(label)}</option>`;
       });
-    }
+      html += `</optgroup>`;
+    });
     return html;
   }
 
-  function questionOptions(current){
-    const cur = String(current||"");
-    let html = `<option value="">Yok</option>`;
-    for(let n=5;n<=200;n+=5){
-      html += `<option value="${n}" ${cur===String(n)?"selected":""}>${n}</option>`;
-    }
-    return html;
-  }
-
-  function valToSubject(val){
-    if(!val) return "";
-    if(val.startsWith("SUBJ|")) return val.split("|")[1] || "";
-    if(val.startsWith("OUT|")){
-      const id = val.split("|")[1];
-      const it = selectedOut.get(Number(id)) || selectedOut.get(id);
-      return (it && it.subject) ? it.subject : "";
-    }
-    return "";
-  }
-
-  function isRepeatViolation(day, slot, nextVal){
-    if(!el("noRepeatSameDay") || !el("noRepeatSameDay").checked) return false;
-    const subj = valToSubject(nextVal);
-    if(!subj) return false;
-
+  function autoFillSequentialForSelectedStudents(){
     const perDay = parseInt(el("perDay").value,10);
-    for(let s=0;s<perDay;s++){
-      if(s===slot) continue;
-      const other = sharedPlan[day][s]?.v || "";
-      if(!other) continue;
-      if(valToSubject(other) === subj) return true;
-    }
-    return false;
-  }
-
-  function autoFillSequential(){
-    ensureSharedPlan();
-    const act = getActiveDaysSet();
-    const perDay = parseInt(el("perDay").value,10);
-
-    const items = Array.from(selectedOut.values()).slice();
-    if(items.length===0) return toast("Önce kazanım seç.");
+    const actDays = getActiveDays();
+    const items = Array.from(selectedOut.values());
     items.sort((a,b)=>
       (a.subject||"").localeCompare(b.subject||"tr") ||
       (a.unit||"").localeCompare(b.unit||"tr") ||
       (a.text||"").localeCompare(b.text||"tr")
     );
 
-    // fill EMPTY slots only, sequential
-    let idx = 0;
-    for(let d=0; d<7; d++){
-      if(!act.has(d)) continue;
-      for(let s=0; s<perDay; s++){
-        if(idx >= items.length) break;
-        if(sharedPlan[d][s].v) continue;
-        const v = `OUT|${items[idx++].id}`;
-        // respect no-repeat
-        if(isRepeatViolation(d,s,v)) continue;
-        sharedPlan[d][s].v = v;
-      }
-    }
-    renderPreview(true);
+    const students = getSelectedStudents();
+    if(students.length===0) return alert("Önce en az 1 öğrenci seç.");
+
+    students.forEach(st=>{
+      const plan = ensurePlanFor(st);
+      let idx=0;
+      actDays.forEach(d=>{
+        for(let s=0;s<perDay;s++){
+          plan[d][s] = (idx < items.length) ? items[idx++].id : "";
+        }
+      });
+    });
+
+    renderPreview();
   }
 
   // ------------------------------------------------------------
-  //  PREVIEW (single shared table)
+  //  PREVIEW (accordion, so page doesn't grow)
   // ------------------------------------------------------------
-  function renderPreview(keepScroll=false){
-    ensureSharedPlan();
-
-    const box = el("preview");
-    const prevScroll = box.scrollTop;
-
+  function renderPlanTableHtml(st, plan){
     const perDay = parseInt(el("perDay").value,10);
-    const act = getActiveDaysSet();
-
+    const actDays = getActiveDays();
     const header = ["Gün", ...Array.from({length:perDay},(_,i)=>`${i+1}. Ders`)];
+    const optHtml = buildOptionsHtml(""); // template
+    // We'll inject per-cell selected via JS after insert (faster than rebuilding optgroups many times)
     let html = `<div class="plan"><table><thead><tr>${header.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>`;
-
-    for(let d=0; d<7; d++){
-      html += `<tr><td><b>${escapeHtml(DAYS[d])}</b></td>`;
-      for(let s=0; s<perDay; s++){
-        const cell = sharedPlan[d][s] || {v:"", q:""};
-        const disabled = act.has(d) ? "" : "disabled";
-        html += `
-          <td>
-            <div class="cellWrap" data-day="${d}" data-slot="${s}">
-              <div class="dragHandle" draggable="true" title="Sürükle-bırak">⋮⋮</div>
-              <select class="lessonSel" data-day="${d}" data-slot="${s}" ${disabled}>
-                ${buildLessonOptions(cell.v)}
-              </select>
-              <select class="qSel" data-day="${d}" data-slot="${s}" ${disabled}>
-                ${questionOptions(cell.q)}
-              </select>
-            </div>
-          </td>
-        `;
+    actDays.forEach(dayIdx=>{
+      html += `<tr><td><b>${escapeHtml(DAYS[dayIdx])}</b></td>`;
+      for(let s=0;s<perDay;s++){
+        html += `<td><select data-k="${escapeHtml(studentKey(st))}" data-day="${dayIdx}" data-slot="${s}">${buildOptionsHtml(plan[dayIdx][s]||"")}</select></td>`;
       }
       html += `</tr>`;
-    }
+    });
     html += `</tbody></table></div>`;
-    box.innerHTML = html;
+    return html;
+  }
 
-    // bind lesson change
-    box.querySelectorAll("select.lessonSel").forEach(sel=>{
-      sel.addEventListener("change", ()=>{
-        const d = parseInt(sel.dataset.day,10);
-        const s = parseInt(sel.dataset.slot,10);
-        const prev = sharedPlan[d][s].v;
-        const next = sel.value;
+  function renderPreview(){
+    const students = getSelectedStudents();
+    const box = el("preview");
+    box.innerHTML = "";
 
-        if(isRepeatViolation(d,s,next)){
-          sel.value = prev;
-          toast("Aynı gün aynı ders tekrar edemez.");
-          return;
-        }
+    if(students.length===0){
+      box.innerHTML = `<div class="hint">Soldan öğrencileri seçince burada önizleme açılacak. Sayfa uzamaz; her öğrenci ayrı açılır/kapanır.</div>`;
+      updateCounts();
+      return;
+    }
 
-        sharedPlan[d][s].v = next;
-        updateCounts();
-      });
+    students.forEach(st=>{
+      const plan = ensurePlanFor(st);
+      const det = document.createElement("details");
+      det.open = (students.length===1);
+      det.innerHTML = `
+        <summary>
+          <div class="sumLeft">
+            <div class="s1">${escapeHtml(st.name || "-")}</div>
+            <div class="s2">${escapeHtml(st.grade)}-${escapeHtml(st.section)} • No: ${escapeHtml(st.num||"-")}</div>
+          </div>
+          <div class="sumRight">Programı düzenle</div>
+        </summary>
+        <div class="panel">
+          ${renderPlanTableHtml(st, plan)}
+        </div>
+      `;
+      box.appendChild(det);
     });
 
-    // bind question change
-    box.querySelectorAll("select.qSel").forEach(sel=>{
+    // bind selects
+    box.querySelectorAll("select").forEach(sel=>{
       sel.addEventListener("change", ()=>{
-        const d = parseInt(sel.dataset.day,10);
-        const s = parseInt(sel.dataset.slot,10);
-        sharedPlan[d][s].q = sel.value;
-      });
-    });
-
-    // drag and drop (swap)
-    box.querySelectorAll(".dragHandle").forEach(handle=>{
-      handle.addEventListener("dragstart", (e)=>{
-        const wrap = handle.closest(".cellWrap");
-        dragFrom = { day: parseInt(wrap.dataset.day,10), slot: parseInt(wrap.dataset.slot,10) };
-        e.dataTransfer.setData("text/plain", JSON.stringify(dragFrom));
-        e.dataTransfer.effectAllowed = "move";
-      });
-      handle.addEventListener("dragover", (e)=>{ e.preventDefault(); e.dataTransfer.dropEffect="move"; });
-      handle.addEventListener("drop", (e)=>{
-        e.preventDefault();
-        let src = null;
-        try{ src = JSON.parse(e.dataTransfer.getData("text/plain")||"null"); }catch(_){}
-        if(!src) src = dragFrom;
-        if(!src) return;
-
-        const dstWrap = handle.closest(".cellWrap");
-        const dst = { day: parseInt(dstWrap.dataset.day,10), slot: parseInt(dstWrap.dataset.slot,10) };
-
-        // swap
-        const a = {...sharedPlan[src.day][src.slot]};
-        const b = {...sharedPlan[dst.day][dst.slot]};
-        sharedPlan[src.day][src.slot] = b;
-        sharedPlan[dst.day][dst.slot] = a;
-
-        renderPreview(true);
+        const k = sel.dataset.k;
+        const day = parseInt(sel.dataset.day,10);
+        const slot = parseInt(sel.dataset.slot,10);
+        const plan = planByStudent.get(k);
+        if(!plan) return;
+        if(!plan[day]) plan[day] = [];
+        plan[day][slot] = sel.value;
       });
     });
 
     updateCounts();
-
-    if(keepScroll) box.scrollTop = prevScroll;
   }
 
   // ------------------------------------------------------------
@@ -854,11 +726,11 @@ tbody tr{height:74px}
   // ------------------------------------------------------------
   function updateCounts(){
     const perDay = parseInt(el("perDay").value,10);
-    const act = getActiveDaysSet();
+    const actDays = getActiveDays();
     el("outCount").textContent = String(selectedOut.size);
     const stuCount = getSelectedStudents().length;
     el("stuCount").textContent = String(stuCount);
-    el("slotCount").textContent = String(Array.from(act).length * perDay);
+    el("slotCount").textContent = String(actDays.length * perDay);
   }
 
   // ------------------------------------------------------------
@@ -881,7 +753,7 @@ tbody tr{height:74px}
   }
 
   // ------------------------------------------------------------
-  //  EXCEL
+  //  EXCEL EXPORT (multi-student -> each student a sheet)
   // ------------------------------------------------------------
   function subjectMeta(name){
     if(!name) return SUBJECT_META.default;
@@ -894,47 +766,22 @@ tbody tr{height:74px}
     if(n.includes("ink")) return SUBJECT_META["İnkılap Tarihi"];
     if(n.includes("din")) return SUBJECT_META["Din Kültürü"];
     if(n.includes("ing")) return SUBJECT_META["İngilizce"];
-    return {code:name.slice(0,4).toUpperCase(), emoji:"", fill:"F5F6F8"};
-  }
-
-  function buildByIdForGrade(grade){
-    const gradeObj = (OUTCOMES && OUTCOMES.grades) ? (OUTCOMES.grades[String(grade)] || {}) : {};
-    const byId = new Map();
-    Object.keys(gradeObj).forEach(subj=>{
-      (gradeObj[subj]||[]).forEach(it=>byId.set(String(it.id), {subj, ...it}));
-    });
-    return byId;
-  }
-
-  function parseCellValue(val, byId){
-    if(!val) return {subj:"", topic:""};
-    if(val.startsWith("SUBJ|")){
-      const subj = val.split("|")[1] || "";
-      return {subj, topic:""};
-    }
-    if(val.startsWith("OUT|")){
-      const id = val.split("|")[1] || "";
-      const item = byId.get(String(id));
-      if(!item) return {subj:"", topic:""};
-      return {subj:item.subj, topic:(item.text||"").toString().trim()};
-    }
-    return {subj:"", topic:""};
+    return {code:name.slice(0,4).toUpperCase(), emoji:"", fill:"F3F4F6"};
   }
 
   async function exportExcel(){
     const students = getSelectedStudents();
     if(students.length===0) return alert("Önce en az 1 öğrenci seç.");
+    if(selectedOut.size===0) return alert("En az 1 kazanım seç.");
 
     const perDay = parseInt(el("perDay").value,10);
-    const act = getActiveDaysSet();
-    if(act.size===0) return alert("En az 1 gün seç.");
-
-    ensureSharedPlan();
-
+    const actDays = getActiveDays();
+    if(actDays.length===0) return alert("En az 1 gün seç.");
     const dateText = getDateText();
     const teacherNote = (el("teacherNote").value || "").trim();
     const qPreset = (el("qPreset").value || "").trim();
 
+    // build quick byId map for selected grade
     const wb = new ExcelJS.Workbook();
     wb.creator = "Altınküre";
     wb.created = new Date();
@@ -948,10 +795,9 @@ tbody tr{height:74px}
       const lastColLetter = (perDay===3) ? "G" : "E";
       const lastColIdx = (perDay===3) ? 7 : 5;
 
-      // Start generous; we'll auto-adjust after writing
       ws.columns = (perDay===3)
-        ? [{width:16},{width:46},{width:10},{width:46},{width:10},{width:46},{width:10}]
-        : [{width:16},{width:46},{width:10},{width:46},{width:10}];
+        ? [{width:14},{width:34},{width:7},{width:34},{width:7},{width:34},{width:7}]
+        : [{width:14},{width:34},{width:7},{width:34},{width:7}];
 
       function fill(cell, argb){ cell.fill = {type:"pattern",pattern:"solid",fgColor:{argb}}; }
       function setFont(cell, opts){ cell.font = Object.assign({name:"Calibri", size:11}, (opts||{})); }
@@ -989,7 +835,7 @@ tbody tr{height:74px}
         ws.mergeCells(`A3:${lastColLetter}3`);
         ws.getRow(3).height = 16;
         ws.getCell("A3").value = `Tarih: ${dateText}`;
-        fill(ws.getCell("A3"), "FFF2F7FF");
+        fill(ws.getCell("A3"), "FFEEF2FF");
         setFont(ws.getCell("A3"), {bold:true, color:{argb:"FF111827"}, size:10});
         left(ws.getCell("A3"));
       }else{
@@ -1007,22 +853,26 @@ tbody tr{height:74px}
         center(cell);
       });
 
-      const byId = buildByIdForGrade(st.grade);
+      // map id -> item for this grade
+      const gradeObj = (OUTCOMES.grades && OUTCOMES.grades[st.grade]) ? OUTCOMES.grades[st.grade] : {};
+      const byId = new Map();
+      Object.keys(gradeObj).forEach(subj=>{
+        (gradeObj[subj]||[]).forEach(it=>byId.set(it.id, {subj, ...it}));
+      });
 
+      const plan = ensurePlanFor(st);
       const startRow = 5;
-      for(let d=0; d<7; d++){
-        const r = startRow + d;
-        ws.getRow(r).height = 42;
-
+      for(let i=0;i<7;i++){
+        const r = startRow+i;
+        ws.getRow(r).height = 34;
         const dayCell = ws.getCell(r,1);
-        dayCell.value = DAYS[d];
+        dayCell.value = DAYS[i];
         fill(dayCell, "FF0E2A47");
         setFont(dayCell, {bold:true, color:{argb:"FFFFFFFF"}, size:10});
         center(dayCell);
 
-        const active = act.has(d);
-
-        for(let s=0; s<perDay; s++){
+        const active = actDays.includes(i);
+        for(let s=0;s<perDay;s++){
           const colLesson = (s===0)?2:(s===1)?4:6;
           const colQ      = (s===0)?3:(s===1)?5:7;
 
@@ -1030,209 +880,180 @@ tbody tr{height:74px}
           const qCell = ws.getCell(r, colQ);
 
           if(!active){
-            fill(lessonCell, "FFF3F4F6");
-            fill(qCell, "FFF3F4F6");
+            fill(lessonCell, "FFF2F4F7");
+            fill(qCell, "FFF2F4F7");
             lessonCell.value = "";
             qCell.value = "";
             left(lessonCell); center(qCell);
             continue;
           }
 
-          const cell = (sharedPlan[d] && sharedPlan[d][s]) ? sharedPlan[d][s] : {v:"", q:""};
-          const parsed = parseCellValue(cell.v || "", byId);
-
-          const subj = parsed.subj || "";
-          const topic = parsed.topic || "";
-
-          if(!subj){
+          const id = (plan[i]||[])[s] || "";
+          const item = id ? byId.get(id) : null;
+          if(!item){
             lessonCell.value = "";
+            qCell.value = qPreset ? Number(qPreset) : "";
             fill(lessonCell, "FFFFFFFF");
-          }else{
-            const meta = subjectMeta(subj);
-            const head = `${meta.emoji} ${meta.code} • ${subj}`.trim();
-            lessonCell.value = topic ? (head + "\n" + topic) : head;
-            fill(lessonCell, "FF"+meta.fill);
-            setFont(lessonCell, {bold:true, size:10, color:{argb:"FF111827"}});
+            fill(qCell, "FFFFF7CC");
+            left(lessonCell); center(qCell);
+            continue;
           }
+
+          const meta = subjectMeta(item.subj);
+          const title = `${meta.emoji} ${meta.code} • ${item.subj}`.trim();
+          const topic = (item.text||"").toString().trim();
+          lessonCell.value = title + "\n" + topic;
+          fill(lessonCell, "FF"+meta.fill);
+          setFont(lessonCell, {bold:true, size:10, color:{argb:"FF111827"}});
           left(lessonCell);
 
-          const qVal = (cell.q || "").trim() || qPreset;
-          qCell.value = qVal ? Number(qVal) : "";
-          fill(qCell, "FFFFFBEA");
+          qCell.value = qPreset ? Number(qPreset) : "";
+          fill(qCell, "FFFFF7CC");
           setFont(qCell, {bold:true, size:10, color:{argb:"FF111827"}});
           center(qCell);
         }
       }
 
-      const lastRow = startRow + 6;
+      const lastRow = startRow+6;
       borderAll(hdrRow, 1, lastRow, lastColIdx);
 
-      // note
-      let noteRow = lastRow + 2;
-      if(teacherNote){
-        ws.mergeCells(`A${noteRow}:${lastColLetter}${noteRow}`);
-        ws.getRow(noteRow).height = 36;
-        ws.getCell(`A${noteRow}`).value = `Not: ${teacherNote}`;
-        fill(ws.getCell(`A${noteRow}`), "FFF7F2FF");
-        setFont(ws.getCell(`A${noteRow}`), {italic:true, color:{argb:"FF111827"}, size:10});
-        left(ws.getCell(`A${noteRow}`));
-        borderAll(noteRow, 1, noteRow, lastColIdx);
-        noteRow++;
-      }
+      // warning
+      const uRow = lastRow + 2;
+      ws.mergeCells(`A${uRow}:${lastColLetter}${uRow}`);
+      ws.getRow(uRow).height = 18;
+      ws.getCell(`A${uRow}`).value = "Uyarı: Ödevleri aksatmayacak şekilde, seçtiğin kazanımlara çalışıyorsun. Soru çözerek konuları pekiştiriyorsun.";
+      fill(ws.getCell(`A${uRow}`), "FFFFE7E7");
+      setFont(ws.getCell(`A${uRow}`), {bold:true, italic:true, color:{argb:"FF7A0000"}, size:10});
+      left(ws.getCell(`A${uRow}`));
+      borderAll(uRow,1,uRow,lastColIdx);
 
-      // auto-fit-ish: widen columns if text is long (cap)
-      const colMax = {};
-      ws.eachRow({includeEmpty:false}, (row)=>{
-        row.eachCell({includeEmpty:false}, (cell, colNumber)=>{
-          const v = cell.value;
-          if(v==null) return;
-          const s = (typeof v === "string") ? v : (typeof v === "number" ? String(v) : (v.richText ? v.richText.map(x=>x.text).join("") : ""));
-          const len = (s||"").split("\n").reduce((m,part)=>Math.max(m, part.length), 0);
-          colMax[colNumber] = Math.max(colMax[colNumber]||0, len);
-        });
-      });
-      ws.columns.forEach((c, idx)=>{
-        const col = idx+1;
-        const maxLen = colMax[col] || 0;
-        // day col
-        if(col===1){ c.width = 16; return; }
-        // question cols
-        if((perDay===2 && (col===3||col===5)) || (perDay===3 && (col===3||col===5||col===7))){ c.width = 10; return; }
-        // lesson cols
-        const target = Math.min(60, Math.max(c.width||40, Math.ceil(maxLen*0.9)));
-        c.width = target;
-      });
+      if(teacherNote){
+        const nRow = uRow+1;
+        ws.mergeCells(`A${nRow}:${lastColLetter}${nRow}`);
+        ws.getRow(nRow).height = 34;
+        ws.getCell(`A${nRow}`).value = "Öğretmen Notu: " + teacherNote;
+        fill(ws.getCell(`A${nRow}`), "FFEEF2FF");
+        setFont(ws.getCell(`A${nRow}`), {size:10, color:{argb:"FF111827"}});
+        left(ws.getCell(`A${nRow}`));
+        borderAll(nRow,1,nRow,lastColIdx);
+      }
     }
 
     const buf = await wb.xlsx.writeBuffer();
-    saveAs(new Blob([buf], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}), "Altinkure_ManuelProgram.xlsx");
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth()+1).padStart(2,"0");
+    const dd = String(now.getDate()).padStart(2,"0");
+    saveAs(new Blob([buf], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}), `Altinkure_Manuel_v2_${yyyy}-${mm}-${dd}.xlsx`);
   }
 
   // ------------------------------------------------------------
-  //  CLEAR
+  //  EVENTS
   // ------------------------------------------------------------
-  function clearAll(){
-    // clear selections (students remain checked? user expects full clear)
-    el("studentList").querySelectorAll("input.stuChk").forEach(c=>c.checked=false);
-    selectedOut = new Map();
-    sharedPlan = {};
-    el("teacherNote").value = "";
-    el("qPreset").value = "";
-    renderOutcomeList();
-    ensureSharedPlan();
-    renderPreview();
-    updateCounts();
+  function debounce(fn, ms){
+    let t=null;
+    return function(){ clearTimeout(t); t=setTimeout(()=>fn(), ms); }
   }
 
-  // ------------------------------------------------------------
-  //  WIRE UP
-  // ------------------------------------------------------------
-  async function boot(){
-    initDays();
+  function hook(){
+    el("dateMode").addEventListener("change", ()=>{
+      el("dateInput").disabled = (el("dateMode").value !== "manual");
+    });
 
-    STUDENTS = await fetchFirstJson(["students.json"]);
-    OUTCOMES = await fetchFirstJson(["kazanimlar.json"]);
-
-    fillSection();
-    renderStudentList();
-
-    fillSubject();
-    fillUnit();
-    renderOutcomeList();
-
-    ensureSharedPlan();
-    renderPreview();
-
-    // events
     el("grade").addEventListener("change", ()=>{
-      // reset outcomes for grade change
-      selectedOut = new Map();
-      sharedPlan = {};
       fillSection();
       renderStudentList();
       fillSubject();
       fillUnit();
       renderOutcomeList();
-      ensureSharedPlan();
       renderPreview();
-      updateCounts();
     });
 
-    el("section").addEventListener("change", ()=>{ renderStudentList(); });
+    el("section").addEventListener("change", ()=>{
+      renderStudentList();
+      renderPreview();
+    });
 
-    el("stuSearch").addEventListener("input", renderStudentList);
+    el("stuSearch").addEventListener("input", debounce(renderStudentList, 120));
+
+    el("perDay").addEventListener("change", ()=>{
+      // adjust all existing plans
+      const students = getSelectedStudents();
+      students.forEach(st=>ensurePlanFor(st));
+      updateCounts();
+      renderPreview();
+    });
+
+    el("days").addEventListener("change", ()=>{
+      const students = getSelectedStudents();
+      students.forEach(st=>ensurePlanFor(st));
+      updateCounts();
+      renderPreview();
+    });
+
+    el("subject").addEventListener("change", ()=>{
+      fillUnit();
+      renderOutcomeList();
+    });
+    el("unit").addEventListener("change", renderOutcomeList);
+    el("q").addEventListener("input", debounce(renderOutcomeList, 120));
+
     el("selAllStu").addEventListener("click", ()=>{
-      el("studentList").querySelectorAll("input.stuChk").forEach(c=>c.checked=true);
+      el("studentList").querySelectorAll("input.stuChk").forEach(ch=> ch.checked = true);
       updateCounts();
       renderPreview();
     });
     el("clrAllStu").addEventListener("click", ()=>{
-      el("studentList").querySelectorAll("input.stuChk").forEach(c=>c.checked=false);
+      el("studentList").querySelectorAll("input.stuChk").forEach(ch=> ch.checked = false);
+      updateCounts();
+      renderPreview();
+    });
+    el("studentList").addEventListener("change", ()=>{
       updateCounts();
       renderPreview();
     });
 
-    el("studentList").addEventListener("change", (e)=>{
-      if(e.target && e.target.classList.contains("stuChk")){
-        updateCounts();
-        renderPreview();
-      }
-    });
-
-    el("subject").addEventListener("change", ()=>{ fillUnit(); renderOutcomeList(); });
-    el("unit").addEventListener("change", renderOutcomeList);
-    el("q").addEventListener("input", renderOutcomeList);
-
     el("selAllOut").addEventListener("click", ()=>{
-      const grade = el("grade").value;
-      const gradeObj = gradeOutcomesObj();
-      Object.entries(gradeObj).forEach(([s,arr])=>{
-        arr.forEach(it=>selectedOut.set(it.id, {...it, subject:s, grade}));
+      const pool = getFilteredOutcomePool();
+      // sadece şu anki filtreye uyanlar
+      pool.slice(0,3000).forEach(it=>{
+        if(!selectedOut.has(it.id)) selectedOut.set(it.id, it);
       });
       renderOutcomeList();
-      renderPreview(true);
-    });
+      updateCounts();
+      renderPreview();
+    });    });
     el("clrAllOut").addEventListener("click", ()=>{
-      selectedOut = new Map();
+      selectedOut.clear();
+      // clear plans too
+      planByStudent.clear();
       renderOutcomeList();
-      renderPreview(true);
+      renderPreview();
     });
 
-    el("perDay").addEventListener("change", ()=>{ ensureSharedPlan(); renderPreview(true); updateCounts(); });
-
-    el("dateMode").addEventListener("change", ()=>{
-      const mode = el("dateMode").value;
-      el("dateInput").disabled = (mode !== "manual");
-      if(mode !== "manual") el("dateInput").value = "";
-    });
-
-    el("days").addEventListener("change", ()=>{
-      // only affects enabled/disabled rows
-      renderPreview(true);
+    el("btnAutoFill").addEventListener("click", autoFillSequentialForSelectedStudents);
+    el("btnExcel").addEventListener("click", exportExcel);
+    el("btnClear").addEventListener("click", ()=>{
+      // only selections, don't touch loaded files
+      selectedOut.clear();
+      planByStudent.clear();
+      el("teacherNote").value = "";
+      el("qPreset").value = "";
+      el("studentList").querySelectorAll("input.stuChk").forEach(ch=> ch.checked = false);
+      renderOutcomeList();
+      renderPreview();
       updateCounts();
     });
-
-    if(el("showSubjectInOptions")){
-      el("showSubjectInOptions").addEventListener("change", ()=>renderPreview(true));
-    }
-    if(el("noRepeatSameDay")){
-      el("noRepeatSameDay").addEventListener("change", ()=>renderPreview(true));
-    }
-
-    el("btnAutoFill").addEventListener("click", autoFillSequential);
-    el("btnExcel").addEventListener("click", exportExcel);
-    el("btnClear").addEventListener("click", clearAll);
   }
 
-  boot().catch(err=>{
-    console.error(err);
-    alert("Veriler yüklenemedi. students.json ve kazanimlar.json aynı klasörde mi?");
-  });
-</script>------------------------------
+  // ------------------------------------------------------------
+  //  BOOT
+  // ------------------------------------------------------------
   async function boot(){
     initDays();
     STUDENTS = await fetchFirstJson(["students.json","students_simple_5-8.json","students_compat.json"]);
     OUTCOMES = await fetchFirstJson(["kazanimlar.json","kazanımlar.json","kazanımlar.json"]);
+     sanitizeOutcomes();
 
     fillSection();
     renderStudentList();
