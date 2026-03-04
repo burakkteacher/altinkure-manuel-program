@@ -3,181 +3,219 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Altınküre • Manuel Program (Ders/Kazanım)</title>
-  
+  <title>Altınküre • Manuel Program v2</title>
+
+  <!-- Excel -->
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
   <style>
     :root{
-  --bg:#f6f7fb;
-  --card:rgba(255,255,255,.92);
-  --muted:#6b7280;
-  --text:#14161a;
-  --line:#e7e9ee;
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --text:#14161a;
+      --muted:#6b7280;
+      --line:#e7e9ee;
+      --shadow: 0 18px 48px rgba(16,24,40,.10);
+      --gold1:#f3d37a;
+      --gold2:#c7a23a;
+      --blue1:#3a7cff;
+      --blue2:#245bd6;
+      --radius:18px;
 
-  --gold1:#f3d37a;
-  --gold2:#c7a23a;
-  --blue1:#3a7cff;
-  --blue2:#245bd6;
-
-  --shadow: 0 18px 48px rgba(16,24,40,.10);
-  --radius:18px;
-}
-
+      --softGold: rgba(199,162,58,.12);
+      --softBlue: rgba(58,124,255,.10);
+      --softRed: rgba(220,38,38,.08);
+      --tableHead:#0e2a47;
+    }
     *{box-sizing:border-box}
-
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background: radial-gradient(1000px 420px at 50% 0%, rgba(199,162,58,.10), transparent 60%),radial-gradient(900px 380px at 85% 35%, rgba(58,124,255,.09), transparent 60%),var(--bg);color:var(--text)}
-
-    .wrap{max-width:1200px;margin:0 auto;padding:18px}
-
-    h1{
-      margin:0 0 14px;
-      font-size:22px;
-      font-weight:900;
-      letter-spacing:-.02em
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      color:var(--text);
+      background:
+        radial-gradient(1000px 420px at 50% 0%, var(--softGold), transparent 60%),
+        radial-gradient(900px 380px at 85% 35%, var(--softBlue), transparent 60%),
+        var(--bg);
+      min-height:100vh;
     }
-
-    .grid{
-      display:grid;
-      grid-template-columns:380px 1fr;
-      gap:16px
+    .wrap{max-width:1220px;margin:0 auto;padding:18px 14px 42px}
+    .topbar{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding:12px 14px;border:1px solid var(--line);border-radius:var(--radius);
+      background:rgba(255,255,255,.92);box-shadow:var(--shadow);backdrop-filter: blur(6px);
+      position:sticky;top:10px;z-index:9;
     }
-
+    .brand{display:flex;align-items:center;gap:12px;min-width:0}
+    .brand img{width:54px;height:54px;object-fit:contain}
+    .brand .t{min-width:0}
+    .brand h1{margin:0;font-size:18px;letter-spacing:-0.02em}
+    .brand .sub{margin-top:2px;font-size:12px;color:var(--muted)}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:10px;
+      padding:11px 14px;border-radius:14px;border:1px solid var(--line);
+      font-weight:800;font-size:14px;cursor:pointer;user-select:none;
+      background:#fff;color:var(--text);
+      box-shadow: 0 14px 30px rgba(16,24,40,.10);
+      transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+      text-decoration:none;
+      white-space:nowrap;
+    }
+    .btn:hover{filter:brightness(1.02);box-shadow: 0 18px 38px rgba(16,24,40,.13);}
+    .btn:active{transform: translateY(1px)}
+    .btn.gold{border:0;background:linear-gradient(180deg,var(--gold1),var(--gold2));color:#1a1406}
+    .btn.blue{border:0;background:linear-gradient(180deg,var(--blue1),var(--blue2));color:#fff}
+    .btn.ghost{background:transparent;box-shadow:none}
+    .grid{display:grid;grid-template-columns:420px 1fr;gap:14px;margin-top:14px}
+    @media (max-width:980px){.grid{grid-template-columns:1fr}}
     .card{
       background:rgba(255,255,255,.92);
       border:1px solid var(--line);
       border-radius:var(--radius);
-      padding:14px;
       box-shadow:var(--shadow);
-      backdrop-filter:blur(6px)
+      padding:14px;
+      backdrop-filter: blur(6px);
+      position:relative;
+      overflow:hidden;
     }
-
+    .card::before{
+      content:"";
+      position:absolute;inset:-1px;
+      background:
+        radial-gradient(520px 220px at 20% 0%, rgba(199,162,58,.16), transparent 60%),
+        radial-gradient(520px 220px at 90% 40%, rgba(58,124,255,.14), transparent 60%);
+      opacity:.55;pointer-events:none;
+    }
+    .card>*{position:relative}
+    h2{margin:0 0 10px;font-size:18px;letter-spacing:-0.02em}
+    label{display:block;margin:10px 0 6px;color:var(--muted);font-size:12px}
+    select,input,textarea{
+      width:100%;padding:10px 11px;border-radius:12px;border:1px solid var(--line);
+      background:#fff;color:var(--text);outline:none;font-size:14px;
+    }
+    textarea{min-height:80px;resize:vertical}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media(max-width:540px){.row{grid-template-columns:1fr}}
+    .days{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+    @media(max-width:540px){.days{grid-template-columns:repeat(4,1fr)}}
+    .day{
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff;
+      font-weight:700;font-size:13px;color:#1f2937;
+      user-select:none;
+    }
+    .day input{width:auto}
+    .hint{margin-top:8px;color:var(--muted);font-size:12px;line-height:1.45}
+    .divider{height:1px;background:var(--line);margin:12px 0}
 
-    label{
-      display:block;
-      font-size:13px;
-      color:var(--muted);
-      margin:10px 0 6px
+    /* Student multiselect */
+    .studentBox{border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}
+    .studentTop{padding:10px 10px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center}
+    .studentTop input{flex:1}
+    .studentList{max-height:280px;overflow:auto}
+    .stuRow{
+      display:flex;gap:10px;align-items:flex-start;padding:10px;
+      border-bottom:1px solid rgba(231,233,238,.9);
+    }
+    .stuRow:last-child{border-bottom:none}
+    .stuRow .meta{font-size:13px;line-height:1.25}
+    .stuRow .meta b{display:block}
+    .stuRow .meta span{color:var(--muted);font-size:12px}
+    .chipbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .chip{
+      border:1px solid var(--line);background:rgba(255,255,255,.7);
+      padding:7px 10px;border-radius:999px;font-size:12px;color:var(--muted)
     }
 
-    select,input,button{
-      width:100%;
-      padding:11px;
-      border-radius:12px;
-      border:1px solid var(--line);
-      background:#fff;
-      color:var(--text);
-      outline:none;
-      font-size:14px
-    }
-
-    button{
-      cursor:pointer;
-      font-weight:800
-    }
-
-    button.primary{
-      background:linear-gradient(180deg,var(--blue1),var(--blue2));
-      border:none;
-      color:white;
-      box-shadow:0 14px 30px rgba(36,91,214,.18)
-    }
-
-    button.gold{
-      background:linear-gradient(180deg,var(--gold1),var(--gold2));
-      border:none;
-      color:#1a1406;
-      box-shadow:0 14px 30px rgba(199,162,58,.18)
-    }
-
-    button.ghost{background:transparent}
-
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:6px 10px;
-      border:1px solid var(--line);
-      border-radius:999px;
-      color:var(--muted);
-      font-size:12px;
-      background:rgba(255,255,255,.7)
-    }
-
-    .tiny{font-size:12px;color:var(--muted)}
-
-    .days{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(74px,1fr));
-      gap:8px
-    }
-
-    .daychk{
-      display:flex;
-      align-items:center;
-      gap:6px;
-      padding:8px;
-      border:1px solid var(--line);
-      border-radius:10px;
-      background:#fff
-    }
-
-    .split{display:flex;gap:8px;align-items:center}
-    .split>*{flex:1}
-
+    /* Outcome list */
     .list{
-      max-height:340px;
-      overflow:auto;
-      border:1px solid var(--line);
-      border-radius:12px;
-      background:#fff
+      border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden
     }
+    .listTop{padding:10px;border-bottom:1px solid var(--line);display:flex;gap:10px;flex-wrap:wrap}
+    .listTop>*{flex:1}
+    .outList{max-height:320px;overflow:auto}
+    .item{display:flex;gap:10px;align-items:flex-start;padding:10px;border-bottom:1px solid rgba(231,233,238,.9)}
+    .item:last-child{border-bottom:none}
+    .itag{min-width:72px;text-align:center;font-size:11px;padding:5px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:#fff}
+    .itxt{font-size:13px;line-height:1.25}
+    .itxt b{display:block}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .toolbar .btn{width:auto}
 
-    table{
-      border-collapse:collapse;
-      width:100%;
-      table-layout:fixed
+    /* Preview area (accordion) */
+    .rightTitle{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:8px}
+    .stats{display:flex;gap:8px;flex-wrap:wrap}
+    .pill{
+      border:1px solid var(--line);border-radius:999px;padding:6px 10px;background:#fff;
+      font-size:12px;color:var(--muted);display:inline-flex;gap:8px;align-items:center
     }
-
-    th,td{
-      border:2px solid #d6d9e3;
-      padding:10px
+    .accordion{display:grid;gap:10px}
+    details{
+      border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.92);
+      box-shadow: 0 10px 26px rgba(16,24,40,.08);
+      overflow:hidden;
     }
-
-    th{
-      background:linear-gradient(180deg, rgba(58,124,255,.10), rgba(58,124,255,.05));
-      font-size:12px;
-      color:#374151;
-      text-transform:uppercase;
-      letter-spacing:.6px
+    summary{
+      list-style:none;cursor:pointer;padding:12px 14px;
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      font-weight:900;font-size:14px;
     }
-
-  .topbar{display:flex;gap:14px;align-items:center;margin:6px 0 14px;}
-.toplogo{width:160px;max-width:38vw;height:auto;filter: drop-shadow(0 12px 20px rgba(16,24,40,.10));}
-.subtitle{color:var(--muted);font-size:14px;margin-top:4px}
-@media (max-width:700px){
-  .topbar{flex-direction:column;align-items:flex-start}
-  .toplogo{width:180px}
-}
-
-</style>
-
+    summary::-webkit-details-marker{display:none}
+    .sumLeft{display:flex;flex-direction:column;gap:2px;min-width:0}
+    .sumLeft .s1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .sumLeft .s2{color:var(--muted);font-weight:700;font-size:12px}
+    .sumRight{color:var(--muted);font-size:12px;font-weight:800}
+    .panel{
+      padding:12px 12px 14px;border-top:1px solid var(--line);background:#fff
+    }
+    .plan{overflow:auto;border:1px solid var(--line);border-radius:14px}
+    table{border-collapse:collapse;width:100%;table-layout:fixed}
+    th,td{border:2px solid #22304a;padding:10px;vertical-align:top}
+    th{background:var(--tableHead);color:#fff;font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+    td{background:#fff}
+    td select{width:100%;padding:9px 10px;border-radius:12px;border:1px solid var(--line)}
+    tbody tr{height:74px}
+    .note{
+      margin-top:10px;border:2px solid #22304a;border-radius:14px;padding:12px;
+      background: linear-gradient(180deg, rgba(199,162,58,.10), rgba(58,124,255,.06));
+      font-size:13px;line-height:1.45
+    }
+    .note b{display:block;margin-bottom:6px}
+    .foot{margin-top:12px;color:var(--muted);font-size:12px;text-align:center}
+  </style>
 </head>
 <body>
   <div class="wrap">
     <div class="topbar">
-  <img class="toplogo" src="logo.png" alt="Altınküre Ortaokulu" onerror="this.style.display='none'"/>
-  <div>
-    <h1>Altınküre Ortaokulu • Manuel Program</h1>
-    <div class="subtitle">Ders veya kazanım seçerek haftalık çalışma programı oluştur (Excel ve toplu Excel ZIP).</div>
-  </div>
-</div>
+      <div class="brand">
+        <img src="logo.png" alt="Altınküre Ortaokulu" onerror="this.style.display='none'"/>
+        <div class="t">
+          <h1>Altınküre Ortaokulu • Manuel Program v2</h1>
+          <div class="sub">PDF yok • Excel var • Çoklu öğrenci seçimi • Sayfa uzamaz (accordion)</div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn blue" id="btnExcel">Seçilenlerden Excel indir</button>
+        <button class="btn gold" id="btnAutoFill">Seçileni sırayla yerleştir</button>
+        <button class="btn ghost" id="btnClear">Temizle</button>
+      </div>
+    </div>
 
     <div class="grid">
+      <!-- LEFT -->
       <div class="card">
+        <h2>Seçimler</h2>
+
         <div class="row">
           <div>
             <label>Sınıf</label>
-            <select id="grade"></select>
+            <select id="grade">
+              <option value="5">5. Sınıf</option>
+              <option value="6">6. Sınıf</option>
+              <option value="7">7. Sınıf</option>
+              <option value="8">8. Sınıf</option>
+            </select>
           </div>
           <div>
             <label>Şube</label>
@@ -185,26 +223,17 @@
           </div>
         </div>
 
-        <label>Öğrenci</label>
-        <select id="student"></select>
-        <div class="tiny">Veri: <span class="badge">students.json</span> + <span class="badge">kazanimlar.json</span></div>
-
-        <div class="row">
-          <div>
-            <label>Tarih</label>
-            <select id="dateMode">
-              <option value="none">Yok</option>
-              <option value="today">Bugün</option>
-              <option value="manual">Seç</option>
-            </select>
+        <label>Öğrenciler (çoklu)</label>
+        <div class="studentBox">
+          <div class="studentTop">
+            <input id="stuSearch" placeholder="Öğrenci ara (isim / numara)..." />
+            <button class="btn" id="selAllStu" style="padding:9px 10px">Tümü</button>
+            <button class="btn" id="clrAllStu" style="padding:9px 10px">Temiz</button>
           </div>
-          <div>
-            <label>Tarih Seç</label>
-            <input id="dateInput" type="date" disabled/>
-          </div>
+          <div class="studentList" id="studentList"></div>
         </div>
 
-        <div class="row">
+        <div class="row" style="margin-top:10px">
           <div>
             <label>Günde kaç ders?</label>
             <select id="perDay">
@@ -213,708 +242,788 @@
             </select>
           </div>
           <div>
-            <label>Aktif günler</label>
-            <div class="days" id="days"></div>
+            <label>Tarih</label>
+            <select id="dateMode">
+              <option value="none">Yok</option>
+              <option value="today">Bugün</option>
+              <option value="manual">Seç</option>
+            </select>
           </div>
         </div>
 
-        <hr style="border:0;border-top:1px solid var(--line);margin:12px 0">
-
-        <label>Program Türü</label>
-        <div class="toggleRow">
-          <button class="gold" id="modeOutcomes" type="button">Kazanım seç</button>
-          <button class="ghost" id="modeSubjects" type="button">Sadece ders</button>
-        </div>
-        <div class="tiny" id="modeHint" style="margin-top:6px">Kazanım seç modunda: soldan kazanım seçip tabloda yerleştirirsin.</div>
-
-        <div id="outcomePanel">
-          <div class="row">
-            <div>
-              <label>Ders filtresi</label>
-              <select id="subject"></select>
-            </div>
-            <div>
-              <label>Ünite filtresi</label>
-              <select id="unit"></select>
-            </div>
+        <div class="row" style="margin-top:10px">
+          <div>
+            <label>Tarih Seç</label>
+            <input id="dateInput" type="date" disabled/>
           </div>
-
-          <label>Arama</label>
-          <input id="q" placeholder="Kazanım/konu içinde ara..."/>
-
-          <div class="toolbar" style="margin:10px 0 8px">
-            <button class="ghost" id="selAll" type="button">Hepsini seç</button>
-            <button class="ghost" id="clrAll" type="button">Seçimi temizle</button>
-            <button class="ghost" id="autoFill" type="button">Seçileni sırayla yerleştir</button>
+          <div>
+            <label>Manuel soru hedefi (opsiyonel)</label>
+            <select id="qPreset">
+              <option value="">Yok</option>
+              <option value="5">5</option><option value="10">10</option><option value="15">15</option><option value="20">20</option>
+              <option value="25">25</option><option value="30">30</option><option value="35">35</option><option value="40">40</option>
+              <option value="45">45</option><option value="50">50</option>
+            </select>
           </div>
-
-          <div class="list" id="outList"></div>
         </div>
 
-        <div id="subjectOnlyPanel" style="display:none">
-          <div class="tiny" style="margin-top:6px">Bu modda kazanım listesi kullanılmaz. Tabloda ders seçilir.</div>
-        </div>
+        <label>Aktif günler</label>
+        <div class="days" id="days"></div>
 
-        <div style="margin-top:12px" class="toolbar">
-          <button class="primary" id="downloadXlsx" type="button">Excel indir</button>
+        <div class="divider"></div>
+
+        <h2>Kazanım / Ders seçimi</h2>
+
+        <div class="list">
+          <div class="listTop">
+            <select id="subject"></select>
+            <select id="unit"></select>
+            <input id="q" placeholder="Kazanım/konu içinde ara...">
           </div>
-
-        <hr style="border:0;border-top:1px solid var(--line);margin:12px 0">
-
-        <b style="display:block;margin:4px 0 6px">Toplu Program (Seçerek)</b>
-        <input id="bulkSearch" placeholder="Öğrenci ara (ad/numara)..." />
-        <div class="bulkList" id="bulkList"></div>
-        <div class="bulkBtns">
-          <button class="ghost" id="bulkAll" type="button">Tümünü seç</button>
-          <button class="ghost" id="bulkNone" type="button">Temizle</button>
-        </div>
-        <div class="bulkBtns">
-          <button class="gold" id="bulkXlsx" type="button">Seçili öğrenciler Excel (ZIP)</button>
+          <div class="outList" id="outList"></div>
         </div>
 
-        <div class="tiny" style="margin-top:8px">
-          Not: Bu sürümde öğretmen <b>yazı yazmaz</b>. Tabloda <b>ders</b> veya <b>kazanım</b> seçilir.
+        <div class="toolbar">
+          <button class="btn" id="selAllOut">Hepsini seç</button>
+          <button class="btn" id="clrAllOut">Seçimi temizle</button>
+        </div>
+
+        <label>Öğretmen notu (opsiyonel)</label>
+        <textarea id="teacherNote" placeholder="Örn: Bu hafta matematikte soru çözümünü artırıyoruz."></textarea>
+
+        <div class="chipbar">
+          <span class="chip">Dosyalar repo kökünde: <b>students.json</b> + <b>kazanimlar.json</b> + (ops.) <b>logo.png</b></span>
+        </div>
+
+        <div class="hint">
+          Bu sayfa sadece <b>görünüm</b> + <b>çoklu öğrenci</b> + <b>Excel</b> düzeni getirir.
+          Programın kemik mantığı: seçilen kazanımlar → günlere yerleştirme → Excel çıktısı.
         </div>
       </div>
 
-      <div class="rightcol">
-        <div class="card">
-          <div class="split">
-            <div class="pill"><span>Seçili kazanım:</span> <b id="selCount">0</b></div>
-            <div class="pill"><span>Plan slot:</span> <b id="slotCount">0</b></div>
-          </div>
-          <div style="height:10px"></div>
-          <div class="plan">
-            <table id="planTable"></table>
+      <!-- RIGHT -->
+      <div class="card">
+        <div class="rightTitle">
+          <h2>Önizleme (Seçilen öğrenciler)</h2>
+          <div class="stats">
+            <span class="pill">Seçili öğrenci: <b id="stuCount">0</b></span>
+            <span class="pill">Seçili kazanım: <b id="outCount">0</b></span>
+            <span class="pill">Slot: <b id="slotCount">0</b></span>
           </div>
         </div>
 
-        <div class="card note">
+        <div class="accordion" id="preview"></div>
+
+        <div class="note">
           <b>Bilgilendirme</b>
-          <div>Ödevleri aksatmayacak şekilde, seçtiğin ders/kazanımlara çalışıyorsun. Soru çözerek konuları pekiştiriyorsun.</div>
+          Ödevleri aksatmayacak şekilde, seçtiğiniz bu kazanımlara çalışıyorsunuz. Soru çözerek konuları pekiştiriyorsunuz.
         </div>
 
-        <div class="card" id="statsCard">
-          <b style="display:block;margin-bottom:6px">Sınıf İstatistik</b>
-          <div class="tiny" id="statsText">—</div>
-        </div>
+        <div class="foot">Altınküre • Manuel Program v2</div>
       </div>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script>
+  // ------------------------------------------------------------
+  //  DATA LOADING
+  // ------------------------------------------------------------
+  const DAYS = ["Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi","Pazar"];
+  const DAY_ABBR = ["Pzt","Sal","Çar","Per","Cum","Cts","Paz"];
 
-  <script>
-    const DAYS = ["Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi","Pazar"];
-    const SUBJECT_ICONS = {"Matematik":"🧮","Türkçe":"📚","Fen Bilimleri":"🔬","Sosyal Bilgiler":"🌍","İnkılap Tarihi":"🏛️","T.C. İnkılap Tarihi ve Atatürkçülük":"🏛️","Din Kültürü":"🤲","İngilizce":"🇬🇧"};
-    const NUMERIC_SUBJECTS = new Set(["Matematik","Fen Bilimleri"]);
-    const SUGGEST = {"5":{num:5,verb:10},"6":{num:8,verb:12},"7":{num:10,verb:15},"8":{num:15,verb:20}};
-    const Q_OPTIONS = (()=>{const a=[0]; for(let x=5;x<=200;x+=5)a.push(x); return a;})();
+  const SUBJECT_META = {
+    "Matematik":      { code:"MAT", emoji:"🧮", fill:"DDEBFF" },
+    "Türkçe":        { code:"TR",  emoji:"📚", fill:"FFE7D6" },
+    "Fen Bilimleri":  { code:"FEN", emoji:"🔬", fill:"E7FFEF" },
+    "Sosyal Bilgiler":{ code:"SOS", emoji:"🌍", fill:"F0E7FF" },
+    "İnkılap Tarihi": { code:"İNK", emoji:"🌍", fill:"F0E7FF" },
+    "Din Kültürü":    { code:"DİN", emoji:"🤲", fill:"FFF7D6" },
+    "İngilizce":      { code:"ENG", emoji:"🇬🇧", fill:"FFE3F1" },
+    "default":        { code:"DERS", emoji:"", fill:"F3F4F6" }
+  };
 
-    let STUDENTS=null, OUTCOMES=null;
-    let selected = new Map();
-    let plan = {};
-    let mode = "outcomes";
-
-    function el(id){ return document.getElementById(id); }
-    function resolveRelUrl(rel){ return new URL(rel, window.location.href).toString(); }
-    async function fetchFirstJson(candidates){
-      const list = Array.isArray(candidates)?candidates:[candidates];
-      let lastErr=null;
-      for(const rel of list){
-        try{
-          const res = await fetch(resolveRelUrl(rel), {cache:"no-store"});
-          if(!res.ok) throw new Error(`${rel} fetch failed: ${res.status}`);
-          return await res.json();
-        }catch(e){ lastErr=e; }
-      }
-      throw lastErr || new Error("JSON fetch failed");
+  function el(id){ return document.getElementById(id); }
+  function escapeHtml(s){ return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;"); }
+  function resolveRelUrl(rel){ return new URL(rel, window.location.href).toString(); }
+  async function fetchFirstJson(cands){
+    const list = Array.isArray(cands) ? cands : [cands];
+    let lastErr = null;
+    for(const rel of list){
+      try{
+        const res = await fetch(resolveRelUrl(rel), { cache: "no-store" });
+        if(!res.ok) throw new Error(`${rel} fetch failed: ${res.status}`);
+        return await res.json();
+      }catch(e){ lastErr = e; }
     }
+    throw lastErr || new Error("JSON fetch failed");
+  }
 
-    function initDays(){
-      const box=el("days"); box.innerHTML="";
-      DAYS.forEach((d,i)=>{
-        const wrap=document.createElement("label");
-        wrap.className="daychk";
-        wrap.innerHTML=`<input type="checkbox" data-day="${i}" checked> <span style="font-size:12px">${d.slice(0,3)}</span>`;
-        box.appendChild(wrap);
+  let STUDENTS = null;
+  let OUTCOMES = null;
+
+  // ------------------------------------------------------------
+  //  STATE
+  // ------------------------------------------------------------
+  let selectedOut = new Map(); // id -> {id,text,unit,subject,grade}
+  let planByStudent = new Map(); // studentKey -> { [dayIdx]: [ids...] }
+
+  function studentKey(st){ return `${st.grade}::${st.section}::${st.num}::${st.name}`; }
+
+  function initDays(){
+    const box = el("days");
+    box.innerHTML = "";
+    DAYS.forEach((d,i)=>{
+      const lab = document.createElement("label");
+      lab.className = "day";
+      lab.innerHTML = `<input type="checkbox" data-day="${i}" checked> ${DAY_ABBR[i]}`;
+      box.appendChild(lab);
+    });
+  }
+  function getActiveDays(){
+    const act = [];
+    el("days").querySelectorAll("input[type=checkbox]").forEach(c=>{
+      if(c.checked) act.push(parseInt(c.dataset.day,10));
+    });
+    return act;
+  }
+
+  // ------------------------------------------------------------
+  //  STUDENTS: load & render multi-select
+  // ------------------------------------------------------------
+  function sectionsForGrade(grade){
+    const keys = Object.keys((STUDENTS && STUDENTS.classes) ? STUDENTS.classes : {});
+    const secs = keys
+      .filter(k => k.startsWith(grade+"::"))
+      .map(k => k.split("::")[1]);
+    return [...new Set(secs)].sort((a,b)=>a.localeCompare(b,"tr"));
+  }
+
+  function getStudentsIn(grade, section){
+    const key = `${grade}::${section}`;
+    return (STUDENTS && STUDENTS.classes && STUDENTS.classes[key]) ? STUDENTS.classes[key] : [];
+  }
+
+  function fillSection(){
+    const grade = el("grade").value;
+    const secSel = el("section");
+    const secs = sectionsForGrade(grade);
+    secSel.innerHTML = secs.map(s=>`<option value="${escapeHtml(s)}">${grade}-${escapeHtml(s)}</option>`).join("") || `<option value="">-</option>`;
+  }
+
+  function renderStudentList(){
+    const grade = el("grade").value;
+    const section = el("section").value;
+    const search = (el("stuSearch").value || "").toLocaleLowerCase("tr-TR").trim();
+
+    const list = getStudentsIn(grade, section);
+    const box = el("studentList");
+    box.innerHTML = "";
+
+    list.forEach((x, idx)=>{
+      const num = (x.num ?? x.no ?? x.number ?? x.Numara ?? x["Numara"] ?? x["No"] ?? "").toString().trim();
+      const name = (x.name ?? x.adi ?? x.Ad ?? x["Adı"] ?? x["Adi"] ?? "").toString().trim();
+      const hay = `${num} ${name}`.toLocaleLowerCase("tr-TR");
+      if(search && !hay.includes(search)) return;
+
+      const row = document.createElement("div");
+      row.className = "stuRow";
+      row.innerHTML = `
+        <input type="checkbox" class="stuChk" data-idx="${idx}">
+        <div class="meta">
+          <b>${escapeHtml(name || "-")}</b>
+          <span>${escapeHtml(grade)}-${escapeHtml(section)} • No: ${escapeHtml(num || "-")}</span>
+        </div>
+      `;
+      box.appendChild(row);
+    });
+
+    // keep previous checks if possible (best effort)
+    updateCounts();
+    renderPreview();
+  }
+
+  function getSelectedStudents(){
+    const grade = el("grade").value;
+    const section = el("section").value;
+    const list = getStudentsIn(grade, section);
+    const selected = [];
+    el("studentList").querySelectorAll("input.stuChk:checked").forEach(ch=>{
+      const idx = parseInt(ch.dataset.idx,10);
+      const x = list[idx];
+      if(!x) return;
+      const num = (x.num ?? x.no ?? x.number ?? x.Numara ?? x["Numara"] ?? x["No"] ?? "").toString().trim();
+      const name = (x.name ?? x.adi ?? x.Ad ?? x["Adı"] ?? x["Adi"] ?? "").toString().trim();
+      selected.push({grade, section, num, name});
+    });
+    return selected;
+  }
+
+  // ------------------------------------------------------------
+  //  OUTCOMES: filters & list
+  // ------------------------------------------------------------
+  function fillSubject(){
+    const grade = el("grade").value;
+    const subjSel = el("subject");
+    const gradeObj = (OUTCOMES && OUTCOMES.grades) ? (OUTCOMES.grades[grade] || {}) : {};
+    const subjects = Object.keys(gradeObj).sort((a,b)=>a.localeCompare(b,"tr"));
+    subjSel.innerHTML = `<option value="__all__">Tümü</option>` + subjects.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("");
+  }
+
+  function fillUnit(){
+    const grade = el("grade").value;
+    const subj = el("subject").value;
+    const unitSel = el("unit");
+    const gradeObj = (OUTCOMES && OUTCOMES.grades) ? (OUTCOMES.grades[grade] || {}) : {};
+    let items = [];
+    if(subj === "__all__"){
+      Object.values(gradeObj).forEach(arr => items.push(...arr));
+    }else{
+      items = gradeObj[subj] || [];
+    }
+    const units = [...new Set(items.map(x=>x.unit||"").filter(Boolean))].sort((a,b)=>a.localeCompare(b,"tr"));
+    unitSel.innerHTML = `<option value="__all__">Tümü</option>` + units.map(u=>`<option value="${escapeHtml(u)}">${escapeHtml(u)}</option>`).join("");
+  }
+
+  function renderOutcomeList(){
+    const grade = el("grade").value;
+    const subj = el("subject").value;
+    const unit = el("unit").value;
+    const q = (el("q").value || "").trim().toLocaleLowerCase("tr-TR");
+
+    const gradeObj = (OUTCOMES && OUTCOMES.grades) ? (OUTCOMES.grades[grade] || {}) : {};
+    let pool = [];
+    if(subj==="__all__"){
+      Object.entries(gradeObj).forEach(([s,arr])=>{
+        arr.forEach(it=>pool.push({...it, subject:s, grade}));
       });
-    }
-    function getActiveDays(){
-      const checks = el("days").querySelectorAll("input[type=checkbox]");
-      const act=[]; checks.forEach(c=>{ if(c.checked) act.push(parseInt(c.dataset.day,10)); });
-      return act;
-    }
-    function fillGradeOptions(){
-      el("grade").innerHTML=["5","6","7","8"].map(v=>`<option value="${v}">${v}. Sınıf</option>`).join("");
+    }else{
+      (gradeObj[subj]||[]).forEach(it=>pool.push({...it, subject:subj, grade}));
     }
 
-    function getClassRoster(grade, section){
-      const cls = STUDENTS?.classes || {};
-      return (cls[`${grade}-${section}`] || cls[`${grade}::${section}`] || []);
-    }
-    function listSectionsForGrade(grade){
-      const cls = STUDENTS?.classes || {};
-      const keys = Object.keys(cls);
-      const secs = keys.filter(k=>k.startsWith(grade+"-")||k.startsWith(grade+"::"))
-        .map(k=>k.includes("-")?k.split("-")[1]:k.split("::")[1]).filter(Boolean);
-      return [...new Set(secs)].sort((a,b)=>a.localeCompare(b,"tr"));
-    }
-    function fillSectionOptions(){
-      const grade=el("grade").value;
-      const secs=listSectionsForGrade(grade);
-      el("section").innerHTML = secs.map(s=>`<option value="${s}">${grade}-${s}</option>`).join("");
-    }
-    function normalizeStudent(x){
-      const num=(x.no??x.num??x.number??x.Numara??x["Numara"]??x.numara??x["No"]??"").toString().trim();
-      const name=(x.name??x.adi??x.Ad??x["Adı"]??x["Adi"]??x["ad"]??"").toString().trim();
-      return {no:num,name};
-    }
-    function fillStudentOptions(){
-      const grade=el("grade").value, section=el("section").value;
-      const list=getClassRoster(grade, section).map(normalizeStudent);
-
-      const sel=el("student"); sel.innerHTML="";
-      sel.appendChild(new Option("Öğrenci seç",""));
-      list.forEach((s,idx)=>{
-        const numTxt=(!s.no||String(s.no).toLowerCase()==="undefined"||String(s.no).toLowerCase()==="nan")?"-":s.no;
-        sel.appendChild(new Option(`${grade}-${section} • ${numTxt} • ${s.name||"-"}`, String(idx)));
-      });
-      sel.value="";
-      renderBulkList();
-    }
-    function getStudentInfoByIndex(idx){
-      const grade=el("grade").value, section=el("section").value;
-      const list=getClassRoster(grade, section).map(normalizeStudent);
-      const s = Number.isFinite(idx) ? list[idx] : null;
-      return { gradeKey: grade, classKey: `${grade}-${section}`, num: s?.no||"", name: s?.name||"" };
-    }
-    function getSelectedStudentInfo(){
-      const idx=parseInt(el("student").value,10);
-      if(!Number.isFinite(idx)) return null;
-      const s=getStudentInfoByIndex(idx);
-      if(!s?.name) return null;
-      return s;
+    if(unit!=="__all__") pool = pool.filter(it => (it.unit||"") === unit);
+    if(q){
+      pool = pool.filter(it => (it.text||"").toLocaleLowerCase("tr-TR").includes(q) || (it.unit||"").toLocaleLowerCase("tr-TR").includes(q));
     }
 
-    function escapeHtml(s){
-      return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
-    }
-    function fillSubjectOptions(){
-      const grade=el("grade").value;
-      const gradeObj=OUTCOMES.grades?.[grade]||{};
-      const subjects=Object.keys(gradeObj).sort((a,b)=>a.localeCompare(b,"tr"));
-      el("subject").innerHTML = `<option value="__all__">Tümü</option>` + subjects.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("");
-    }
-    function fillUnitOptions(){
-      const grade=el("grade").value, subj=el("subject").value;
-      const gradeObj=OUTCOMES.grades?.[grade]||{};
-      let items=[];
-      if(subj==="__all__"){ Object.values(gradeObj).forEach(arr=>items.push(...arr)); }
-      else items=gradeObj[subj]||[];
-      const units=[...new Set(items.map(x=>x.unit||"").filter(Boolean))].sort((a,b)=>a.localeCompare(b,"tr"));
-      el("unit").innerHTML = `<option value="__all__">Tümü</option>` + units.map(u=>`<option value="${escapeHtml(u)}">${escapeHtml(u)}</option>`).join("");
-    }
+    const out = el("outList");
+    out.innerHTML = "";
+    pool.slice(0,2000).forEach(it=>{
+      const row = document.createElement("div");
+      row.className = "item";
+      const checked = selectedOut.has(it.id) ? "checked" : "";
+      row.innerHTML = `
+        <input class="outChk" type="checkbox" data-id="${escapeHtml(it.id)}" ${checked}>
+        <div class="itag">${escapeHtml(it.subject)}</div>
+        <div class="itxt"><b>${escapeHtml(it.unit||"")}</b><div>${escapeHtml(it.text||"")}</div></div>
+      `;
+      out.appendChild(row);
+    });
 
-    function renderOutcomeList(){
-      const grade=el("grade").value, subj=el("subject").value, unit=el("unit").value;
-      const q=(el("q").value||"").trim().toLocaleLowerCase("tr-TR");
-      const gradeObj=OUTCOMES.grades?.[grade]||{};
-      let pool=[];
-      if(subj==="__all__"){
-        Object.entries(gradeObj).forEach(([s,arr])=>arr.forEach(it=>pool.push({...it,subject:s,grade})));
-      } else (gradeObj[subj]||[]).forEach(it=>pool.push({...it,subject:subj,grade}));
-      if(unit!=="__all__") pool=pool.filter(it=>(it.unit||"")===unit);
-      if(q) pool=pool.filter(it=>(it.text||"").toLocaleLowerCase("tr-TR").includes(q) || (it.unit||"").toLocaleLowerCase("tr-TR").includes(q));
-
-      const out=el("outList"); out.innerHTML="";
-      pool.slice(0,2000).forEach(it=>{
-        const row=document.createElement("div"); row.className="item";
-        row.innerHTML=`
-          <input class="chk" type="checkbox" data-id="${escapeHtml(it.id)}" ${selected.has(it.id)?"checked":""}>
-          <div class="itag">${escapeHtml(it.subject)}</div>
-          <div class="itxt"><b>${escapeHtml(it.unit||"")}</b><div>${escapeHtml(it.text)}</div></div>`;
-        out.appendChild(row);
-      });
-
-      out.querySelectorAll("input[type=checkbox]").forEach(ch=>{
-        ch.addEventListener("change", ()=>{
-          const id=ch.dataset.id;
-          const item=pool.find(x=>String(x.id)===String(id));
-          if(!item) return;
-          if(ch.checked) selected.set(item.id,item);
-          else{
-            selected.delete(item.id);
-            for(const k of Object.keys(plan)){
-              plan[k]=plan[k].map(slot => (slot?.v===`O|${item.id}`) ? {v:"",q:0} : slot);
-            }
-          }
-          updateCounts(); renderPlanTable(); renderStats();
-        });
-      });
-
-      updateCounts(); renderStats();
-    }
-
-    function setMode(next){
-      mode=next;
-      if(mode==="outcomes"){
-        el("modeOutcomes").className="gold";
-        el("modeSubjects").className="ghost";
-        el("outcomePanel").style.display="";
-        el("subjectOnlyPanel").style.display="none";
-        el("modeHint").textContent="Kazanım seç modunda: soldan kazanım seçip tabloda yerleştirirsin. Tabloda ayrıca ders seçeneği de her zaman vardır.";
-      }else{
-        el("modeOutcomes").className="ghost";
-        el("modeSubjects").className="gold";
-        el("outcomePanel").style.display="none";
-        el("subjectOnlyPanel").style.display="";
-        el("modeHint").textContent="Sadece ders modunda: tabloda ders seçersin. (Kazanım listesi kapalıdır.)";
-      }
-      renderPlanTable(); renderStats();
-    }
-
-    function updateCounts(){
-      el("selCount").textContent=String(selected.size);
-      const perDay=parseInt(el("perDay").value,10);
-      el("slotCount").textContent=String(getActiveDays().length*perDay);
-    }
-
-    function ensurePlanShape(){
-      const perDay=parseInt(el("perDay").value,10);
-      const actDays=getActiveDays();
-      actDays.forEach(i=>{
-        if(!plan[i]||plan[i].length!==perDay){
-          const prev=plan[i]||[];
-          plan[i]=Array.from({length:perDay},(_,k)=>prev[k]||{v:"",q:0});
-        }
-      });
-      Object.keys(plan).forEach(k=>{ if(!actDays.includes(parseInt(k,10))) delete plan[k]; });
-    }
-
-    function subjectLabel(subj){
-      return `${SUBJECT_ICONS[subj]||"📌"} ${subj}`;
-    }
-    function suggestedQuestions(grade, subj){
-      const s=SUGGEST[String(grade)]||{num:10,verb:15};
-      return NUMERIC_SUBJECTS.has(subj) ? s.num : s.verb;
-    }
-
-    function buildPlanOptions(){
-      const grade=el("grade").value;
-      const gradeObj=OUTCOMES.grades?.[grade]||{};
-      const allSubjects=Object.keys(gradeObj).sort((a,b)=>a.localeCompare(b,"tr"));
-
-      const items=[...selected.values()];
-      items.sort((a,b)=> (a.subject||"").localeCompare(b.subject||"tr") || (a.unit||"").localeCompare(b.unit||"tr") || (a.text||"").localeCompare(b.text||"tr"));
-
-      const groups={};
-      items.forEach(it=>{ (groups[it.subject] ||= []).push(it); });
-
-      return (current)=>{
-        let html=`<option value="">(Boş)</option>`;
-        html += `<optgroup label="Sadece Ders">`;
-        allSubjects.forEach(subj=>{
-          const val=`S|${subj}`;
-          html += `<option value="${escapeHtml(val)}" ${String(current)===val?"selected":""}>${escapeHtml(subjectLabel(subj))}</option>`;
-        });
-        html += `</optgroup>`;
-
-        if(mode==="outcomes" && items.length){
-          Object.keys(groups).sort((a,b)=>a.localeCompare(b,"tr")).forEach(subj=>{
-            html += `<optgroup label="${escapeHtml("Kazanım • "+subj)}">`;
-            groups[subj].forEach(it=>{
-              const val=`O|${it.id}`;
-              const label=`${subjectLabel(it.subject)} — ${it.unit?it.unit+" — ":""}${it.text}`;
-              html += `<option value="${escapeHtml(val)}" ${String(current)===val?"selected":""}>${escapeHtml(label)}</option>`;
+    out.querySelectorAll("input.outChk").forEach(ch=>{
+      ch.addEventListener("change", ()=>{
+        const id = ch.dataset.id;
+        const item = pool.find(x=>String(x.id)===String(id));
+        if(!item) return;
+        if(ch.checked) selectedOut.set(item.id, item);
+        else{
+          selectedOut.delete(item.id);
+          // remove from all plans
+          for(const [k,plan] of planByStudent.entries()){
+            Object.keys(plan).forEach(day=>{
+              plan[day] = plan[day].map(v=> v===item.id ? "" : v);
             });
-            html += `</optgroup>`;
-          });
+          }
         }
-        return html;
-      };
-    }
-
-    function buildQOptions(current){
-      return Q_OPTIONS.map(n=>`<option value="${n}" ${(Number(current)===Number(n))?"selected":""}>${n}</option>`).join("");
-    }
-
-    function resolveSlotSubject(v){
-      if(!v) return "";
-      if(v.startsWith("S|")) return v.slice(2);
-      if(v.startsWith("O|")){
-        const it=selected.get(v.slice(2));
-        return it?.subject||"";
-      }
-      return "";
-    }
-    function resolveSlotText(v){
-      if(!v) return "";
-      if(v.startsWith("S|")) return "";
-      if(v.startsWith("O|")){
-        const it=selected.get(v.slice(2));
-        if(!it) return "";
-        return (it.unit?it.unit+" — ":"") + (it.text||"");
-      }
-      return "";
-    }
-
-    function renderPlanTable(){
-      ensurePlanShape();
-      const perDay=parseInt(el("perDay").value,10);
-      const actDays=getActiveDays();
-      const tbl=el("planTable");
-
-      const headers=["Gün"];
-      for(let i=0;i<perDay;i++){ headers.push(`${i+1}. Ders`); headers.push("Soru"); }
-      tbl.innerHTML=`<thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody></tbody>`;
-      const body=tbl.querySelector("tbody");
-      const options=buildPlanOptions();
-
-      actDays.forEach(dayIdx=>{
-        const tr=document.createElement("tr");
-        let html=`<td><b>${DAYS[dayIdx]}</b></td>`;
-        for(let slotIdx=0; slotIdx<perDay; slotIdx++){
-          const slot=plan[dayIdx][slotIdx]||{v:"",q:0};
-          html += `<td><select class="slotSel" data-day="${dayIdx}" data-slot="${slotIdx}">${options(slot.v)}</select></td>`;
-          html += `<td><select class="qSel" data-day="${dayIdx}" data-slot="${slotIdx}">${buildQOptions(slot.q)}</select></td>`;
-        }
-        tr.innerHTML=html;
-        body.appendChild(tr);
+        updateCounts();
+        renderPreview();
       });
+    });
 
-      body.querySelectorAll("select.slotSel").forEach(s=>{
-        s.addEventListener("change", ()=>{
-          const d=parseInt(s.dataset.day,10), sl=parseInt(s.dataset.slot,10);
-          plan[d][sl].v=s.value;
-          const subj=resolveSlotSubject(s.value);
-          plan[d][sl].q = subj ? suggestedQuestions(el("grade").value, subj) : 0;
-          renderPlanTable(); renderStats();
-        });
+    updateCounts();
+  }
+
+  // ------------------------------------------------------------
+  //  PLAN (per student)
+  // ------------------------------------------------------------
+  function ensurePlanFor(st){
+    const key = studentKey(st);
+    const perDay = parseInt(el("perDay").value,10);
+    const actDays = getActiveDays();
+
+    if(!planByStudent.has(key)) planByStudent.set(key, {});
+    const plan = planByStudent.get(key);
+
+    actDays.forEach(i=>{
+      if(!plan[i] || plan[i].length !== perDay) plan[i] = Array(perDay).fill("");
+    });
+    Object.keys(plan).forEach(k=>{
+      if(!actDays.includes(parseInt(k,10))) delete plan[k];
+    });
+    return plan;
+  }
+
+  function buildOptionsHtml(current){
+    const items = Array.from(selectedOut.values());
+    items.sort((a,b)=>
+      (a.subject||"").localeCompare(b.subject||"tr") ||
+      (a.unit||"").localeCompare(b.unit||"tr") ||
+      (a.text||"").localeCompare(b.text||"tr")
+    );
+    const groups = {};
+    items.forEach(it=>{
+      if(!groups[it.subject]) groups[it.subject]=[];
+      groups[it.subject].push(it);
+    });
+
+    let html = `<option value="">(Boş)</option>`;
+    Object.keys(groups).sort((a,b)=>a.localeCompare(b,"tr")).forEach(subj=>{
+      html += `<optgroup label="${escapeHtml(subj)}">`;
+      groups[subj].forEach(it=>{
+        const label = `${it.unit ? it.unit+" — " : ""}${it.text}`;
+        const sel = String(current)===String(it.id) ? "selected" : "";
+        html += `<option value="${escapeHtml(it.id)}" ${sel}>${escapeHtml(label)}</option>`;
       });
-      body.querySelectorAll("select.qSel").forEach(s=>{
-        s.addEventListener("change", ()=>{
-          const d=parseInt(s.dataset.day,10), sl=parseInt(s.dataset.slot,10);
-          plan[d][sl].q=parseInt(s.value,10)||0;
-          renderStats();
-        });
-      });
+      html += `</optgroup>`;
+    });
+    return html;
+  }
 
-      updateCounts();
-    }
+  function autoFillSequentialForSelectedStudents(){
+    const perDay = parseInt(el("perDay").value,10);
+    const actDays = getActiveDays();
+    const items = Array.from(selectedOut.values());
+    items.sort((a,b)=>
+      (a.subject||"").localeCompare(b.subject||"tr") ||
+      (a.unit||"").localeCompare(b.unit||"tr") ||
+      (a.text||"").localeCompare(b.text||"tr")
+    );
 
-    function autoFillSequential(){
-      ensurePlanShape();
-      const perDay=parseInt(el("perDay").value,10);
-      const actDays=getActiveDays();
-      const items=[...selected.values()];
-      items.sort((a,b)=> (a.subject||"").localeCompare(b.subject||"tr") || (a.unit||"").localeCompare(b.unit||"tr") || (a.text||"").localeCompare(b.text||"tr"));
+    const students = getSelectedStudents();
+    if(students.length===0) return alert("Önce en az 1 öğrenci seç.");
+
+    students.forEach(st=>{
+      const plan = ensurePlanFor(st);
       let idx=0;
       actDays.forEach(d=>{
         for(let s=0;s<perDay;s++){
-          const it=items[idx++];
-          plan[d][s].v = it ? `O|${it.id}` : "";
-          plan[d][s].q = it ? suggestedQuestions(el("grade").value, it.subject) : 0;
+          plan[d][s] = (idx < items.length) ? items[idx++].id : "";
         }
       });
-      renderPlanTable(); renderStats();
-    }
+    });
 
-    function renderBulkList(){
-      const grade=el("grade").value, section=el("section").value;
-      const list=getClassRoster(grade, section).map(normalizeStudent);
-      const q=(el("bulkSearch").value||"").trim().toLocaleLowerCase("tr-TR");
-      const filtered=q ? list.filter(s=>(s.name||"").toLocaleLowerCase("tr-TR").includes(q) || (s.no||"").includes(q)) : list;
-
-      const box=el("bulkList"); box.innerHTML="";
-      filtered.forEach((s,idx)=>{
-        const div=document.createElement("div"); div.className="bulkItem";
-        div.innerHTML=`<input type="checkbox" class="bulkChk" data-idx="${idx}"> <span style="font-size:13px">${escapeHtml(s.no||"-")} • ${escapeHtml(s.name||"-")}</span>`;
-        box.appendChild(div);
-      });
-    }
-    function getBulkSelectedIndexes(){
-      const chks=el("bulkList").querySelectorAll("input.bulkChk");
-      const idxs=[]; chks.forEach(c=>{ if(c.checked) idxs.push(parseInt(c.dataset.idx,10)); });
-      return idxs.filter(Number.isFinite);
-    }
-
-    function renderStats(){
-      const perDay=parseInt(el("perDay").value,10);
-      const actDays=getActiveDays();
-      const subjCount=new Map();
-      let totalQ=0, outcomeCount=0;
-
-      actDays.forEach(d=>{
-        (plan[d]||[]).slice(0,perDay).forEach(slot=>{
-          const v=slot?.v||"";
-          const qv=Number(slot?.q||0);
-          totalQ += qv;
-          const subj=resolveSlotSubject(v);
-          if(subj) subjCount.set(subj,(subjCount.get(subj)||0)+1);
-          if(v.startsWith("O|")) outcomeCount++;
-        });
-      });
-
-      const parts=[...subjCount.entries()].sort((a,b)=>a[0].localeCompare(b[0],"tr"))
-        .map(([s,c])=>`${subjectLabel(s)}: ${c}`);
-      el("statsText").textContent = [
-        parts.length?parts.join(" • "):"—",
-        `Seçili kazanım slot: ${outcomeCount}`,
-        `Toplam soru: ${totalQ}`
-      ].join("\n");
-    }
-
-    function getDateText(){
-      const mode=el("dateMode").value;
-      if(mode==="none") return "";
-      if(mode==="today"){
-        const d=new Date();
-        return `${String(d.getDate()).padStart(2,"0")}.${String(d.getMonth()+1).padStart(2,"0")}.${d.getFullYear()}`;
-      }
-      const v=el("dateInput").value;
-      if(!v) return "";
-      const [yy,mm,dd]=v.split("-");
-      return `${dd}.${mm}.${yy}`;
-    }
-    function safeFileName(s){
-      return (s||"").toString().replace(/[^\w\s\-ĞÜŞİÖÇğüşıöç]/g,"").trim().replace(/\s+/g,"_");
-    }
-
-    async function exportExcelForStudent(st){
-      if(!st?.name) throw new Error("Öğrenci seç");
-      const perDay=parseInt(el("perDay").value,10);
-      const activeDays=getActiveDays();
-      if(activeDays.length===0) throw new Error("En az 1 gün seç");
-      ensurePlanShape();
-
-      const wb=new ExcelJS.Workbook();
-      wb.creator="Altınküre"; wb.created=new Date();
-      const ws=wb.addWorksheet("Program");
-
-      ws.pageSetup={paperSize:9,orientation:"landscape",fitToPage:true,fitToWidth:1,fitToHeight:1,horizontalCentered:true,verticalCentered:false,
-        margins:{left:0.25,right:0.25,top:0.35,bottom:0.35,header:0.15,footer:0.15}};
-
-      const DARK="0B1B2B", WHITE="FFFFFF";
-      const SUBJECT_META={
-        "Matematik":{code:"MAT",fill:"DDEBFF"},"Türkçe":{code:"TR",fill:"FDE3D1"},"Fen Bilimleri":{code:"FEN",fill:"DFF5E1"},
-        "Sosyal Bilgiler":{code:"SOS",fill:"E6E0FF"},"İnkılap Tarihi":{code:"İNK",fill:"E6E0FF"},
-        "T.C. İnkılap Tarihi ve Atatürkçülük":{code:"İNK",fill:"E6E0FF"},"Din Kültürü":{code:"DİN",fill:"DFF5F1"},"İngilizce":{code:"ENG",fill:"F7D9FF"},
-      };
-
-      const cols2=[{width:14},{width:30},{width:6},{width:30},{width:6}];
-      const cols3=cols2.concat([{width:30},{width:6}]);
-      ws.columns=(perDay===3?cols3:cols2);
-
-      const lastColLetter=(perDay===3)?"G":"E";
-      const lastColIdx=(perDay===3)?7:5;
-
-      const fill=(cell,hex)=>cell.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF"+hex.replace("#","")}};
-      const font=(cell,opts)=>cell.font=Object.assign({name:"Arial",size:11},opts||{});
-      const center=(cell)=>cell.alignment={vertical:"middle",horizontal:"center",wrapText:true};
-      const vleft=(cell)=>cell.alignment={vertical:"middle",horizontal:"left",wrapText:true};
-      const setBorder=(r1,c1,r2,c2)=>{
-        for(let r=r1;r<=r2;r++)for(let c=c1;c<=c2;c++){
-          ws.getCell(r,c).border={top:{style:"thin",color:{argb:"FF233142"}},left:{style:"thin",color:{argb:"FF233142"}},
-            bottom:{style:"thin",color:{argb:"FF233142"}},right:{style:"thin",color:{argb:"FF233142"}}};
-        }
-      };
-
-      ws.mergeCells(`A1:${lastColLetter}1`);
-      ws.getRow(1).height=22;
-      ws.getCell("A1").value="ALTINKÜRE ORTAOKULU";
-      fill(ws.getCell("A1"),DARK);
-      font(ws.getCell("A1"),{bold:true,color:{argb:"FF"+WHITE},size:13});
-      ws.getCell("A1").alignment={vertical:"middle",horizontal:"left"};
-
-      ws.mergeCells(`A2:${lastColLetter}2`);
-      ws.getRow(2).height=18;
-      const dateTxt=getDateText();
-      ws.getCell("A2").value=`Öğrenci Bazlı Haftalık Çalışma Programı${dateTxt?(" | "+dateTxt):""} | ${st.classKey} • No: ${st.num||""} • ${st.name}`;
-      fill(ws.getCell("A2"),DARK);
-      font(ws.getCell("A2"),{bold:true,color:{argb:"FF"+WHITE},size:10});
-      ws.getCell("A2").alignment={vertical:"middle",horizontal:"left"};
-
-      ws.getRow(3).height=6;
-
-      ws.getRow(4).height=20;
-      ws.getCell("A4").value="Gün";
-      ws.getCell("B4").value="1. Ders"; ws.getCell("C4").value="Soru";
-      ws.getCell("D4").value="2. Ders"; ws.getCell("E4").value="Soru";
-      if(perDay===3){ ws.getCell("F4").value="3. Ders"; ws.getCell("G4").value="Soru"; }
-      const hdr=["A4","B4","C4","D4","E4"].concat(perDay===3?["F4","G4"]:[]);
-      hdr.forEach(a=>{ fill(ws.getCell(a),DARK); font(ws.getCell(a),{bold:true,color:{argb:"FF"+WHITE},size:10}); center(ws.getCell(a)); });
-
-      const startRow=5;
-      for(let i=0;i<DAYS.length;i++){
-        const r=startRow+i;
-        ws.getRow(r).height=34;
-        ws.getCell(`A${r}`).value=DAYS[i];
-        fill(ws.getCell(`A${r}`),DARK);
-        font(ws.getCell(`A${r}`),{bold:true,color:{argb:"FF"+WHITE},size:10});
-        center(ws.getCell(`A${r}`));
-
-        const isActive=activeDays.includes(i);
-        for(let k=0;k<perDay;k++){
-          const col=(k===0?"B":k===1?"D":"F");
-          const qcol=(k===0?"C":k===1?"E":"G");
-          const cell=ws.getCell(`${col}${r}`), qcell=ws.getCell(`${qcol}${r}`);
-          if(!isActive){
-            fill(cell,"F2F4F7"); fill(qcell,"F2F4F7"); cell.value=""; qcell.value=""; vleft(cell); center(qcell); continue;
-          }
-          const slot=plan[i][k]||{v:"",q:0};
-          const v=slot.v||"", qv=Number(slot.q||0)||"";
-          const subj=resolveSlotSubject(v);
-          if(!subj){
-            fill(cell,"FFFFFF"); fill(qcell,"FFFFFF"); cell.value=""; qcell.value=""; vleft(cell); center(qcell); continue;
-          }
-          const meta=SUBJECT_META[subj]||{code:subj.slice(0,3).toUpperCase(),fill:"FFFFFF"};
-          const title=`${meta.code} • ${subj}`;
-          const topic=resolveSlotText(v);
-          cell.value = topic ? (title+"\n"+topic) : title;
-          fill(cell,meta.fill); font(cell,{bold:true,size:10,color:{argb:"FF111827"}}); vleft(cell);
-          qcell.value=qv; fill(qcell,"FFF7CC"); font(qcell,{bold:true,size:10,color:{argb:"FF111827"}}); center(qcell);
-        }
-      }
-
-      const tableLastRow=startRow+6;
-      setBorder(4,1,tableLastRow,lastColIdx);
-
-      const uRow=tableLastRow+2;
-      ws.getRow(uRow).height=18;
-      ws.mergeCells(`A${uRow}:${lastColLetter}${uRow}`);
-      ws.getCell(`A${uRow}`).value="Uyarı: Ödevleri aksatmayacak şekilde, seçtiğin ders/kazanımlara çalışıyorsun. Soru çözerek konuları pekiştiriyorsun.";
-      fill(ws.getCell(`A${uRow}`),"FAD2D2");
-      font(ws.getCell(`A${uRow}`),{italic:true,color:{argb:"FF7A0000"},bold:true,size:10});
-      ws.getCell(`A${uRow}`).alignment={vertical:"middle",horizontal:"left",wrapText:true};
-      setBorder(uRow,1,uRow,lastColIdx);
-
-      const sRow=uRow+2;
-      ws.getRow(sRow).height=18;
-      const mid=(perDay===3)?"D":"C";
-      ws.mergeCells(`A${sRow}:${mid}${sRow}`);
-      ws.mergeCells(`${String.fromCharCode(mid.charCodeAt(0)+1)}${sRow}:${lastColLetter}${sRow}`);
-      ws.getCell(`A${sRow}`).value="Öğrenci imza:";
-      ws.getCell(`${String.fromCharCode(mid.charCodeAt(0)+1)}${sRow}`).value="Veli imza:";
-      font(ws.getCell(`A${sRow}`),{bold:true,size:10});
-      font(ws.getCell(`${String.fromCharCode(mid.charCodeAt(0)+1)}${sRow}`),{bold:true,size:10});
-      ws.getCell(`A${sRow}`).alignment={vertical:"middle",horizontal:"left"};
-      ws.getCell(`${String.fromCharCode(mid.charCodeAt(0)+1)}${sRow}`).alignment={vertical:"middle",horizontal:"left"};
-      setBorder(sRow,1,sRow,lastColIdx);
-
-      return await wb.xlsx.writeBuffer();
-    }
-        body.push(row);
-      }
-
-      doc.autoTable({
-        startY:70,
-        head, body,
-        theme:"grid",
-        styles:{font:"helvetica",fontSize:8,cellPadding:4,valign:"middle"},
-        headStyles:{fillColor:[15,26,46],textColor:[238,243,255],fontStyle:"bold"},
-        columnStyles:{0:{cellWidth:90}},
-        didParseCell:(data)=>{
-          if(data.section==='body' && data.column.index===0){
-            data.cell.styles.fontStyle='bold';
-            data.cell.styles.fillColor=[15,26,46];
-            data.cell.styles.textColor=[238,243,255];
-          }
-        }
-      });
-
-      const y=doc.lastAutoTable.finalY+16;
-      doc.setFontSize(9); doc.setTextColor(122,0,0);
-      doc.text("Uyarı: Ödevleri aksatmayacak şekilde, seçtiğin ders/kazanımlara çalışıyorsun. Soru çözerek konuları pekiştiriyorsun.",40,y);
-      doc.setTextColor(0,0,0);
-      return doc;
-    }
-
-    async function downloadXlsxSingle(){
-      const st=getSelectedStudentInfo();
-      if(!st) return alert("Önce öğrenci seç.");
-      const buf=await exportExcelForStudent(st);
-      const filename=`Program_${safeFileName(st.classKey)}_${safeFileName(st.num||"No")}_${safeFileName(st.name)}.xlsx`;
-      saveAs(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}),filename);
-    }
-
-    
-async function bulkZip(){
-  const idxs=getBulkSelectedIndexes();
-  if(!idxs.length) return alert("Toplu program için en az 1 öğrenci seç.");
-  const zip=new JSZip();
-  const grade=el("grade").value, section=el("section").value;
-
-  for(const idx of idxs){
-    const st=getStudentInfoByIndex(idx);
-    if(!st?.name) continue;
-    const buf=await exportExcelForStudent(st);
-    zip.file(`Program_${safeFileName(st.classKey)}_${safeFileName(st.num||"No")}_${safeFileName(st.name)}.xlsx`, buf);
+    renderPreview();
   }
 
-  const blob=await zip.generateAsync({type:"blob"});
-  saveAs(blob, `Programlar_${grade}-${section}_XLSX.zip`);
-}
-
+  // ------------------------------------------------------------
+  //  PREVIEW (accordion, so page doesn't grow)
+  // ------------------------------------------------------------
+  function renderPlanTableHtml(st, plan){
+    const perDay = parseInt(el("perDay").value,10);
+    const actDays = getActiveDays();
+    const header = ["Gün", ...Array.from({length:perDay},(_,i)=>`${i+1}. Ders`)];
+    const optHtml = buildOptionsHtml(""); // template
+    // We'll inject per-cell selected via JS after insert (faster than rebuilding optgroups many times)
+    let html = `<div class="plan"><table><thead><tr>${header.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>`;
+    actDays.forEach(dayIdx=>{
+      html += `<tr><td><b>${escapeHtml(DAYS[dayIdx])}</b></td>`;
+      for(let s=0;s<perDay;s++){
+        html += `<td><select data-k="${escapeHtml(studentKey(st))}" data-day="${dayIdx}" data-slot="${s}">${buildOptionsHtml(plan[dayIdx][s]||"")}</select></td>`;
       }
-      const blob=await zip.generateAsync({type:"blob"});
-      saveAs(blob, `Programlar_${grade}-${section}_${kind.toUpperCase()}.zip`);
-    }
-
-    function debounce(fn,ms){ let t=null; return ()=>{ clearTimeout(t); t=setTimeout(fn,ms); }; }
-
-    function hook(){
-      el("dateMode").addEventListener("change", ()=>{ el("dateInput").disabled=(el("dateMode").value!=="manual"); });
-      el("modeOutcomes").addEventListener("click", ()=>setMode("outcomes"));
-      el("modeSubjects").addEventListener("click", ()=>setMode("subjects"));
-
-      el("grade").addEventListener("change", ()=>{
-        fillSectionOptions(); fillStudentOptions();
-        fillSubjectOptions(); fillUnitOptions();
-        if(mode==="outcomes") renderOutcomeList();
-        plan={}; renderPlanTable(); renderStats();
-      });
-      el("section").addEventListener("change", ()=>{
-        fillStudentOptions();
-        plan={}; renderPlanTable(); renderStats();
-      });
-
-      el("subject").addEventListener("change", ()=>{ fillUnitOptions(); renderOutcomeList(); });
-      el("unit").addEventListener("change", renderOutcomeList);
-      el("q").addEventListener("input", debounce(renderOutcomeList,120));
-
-      el("perDay").addEventListener("change", ()=>{ renderPlanTable(); renderStats(); });
-      el("days").addEventListener("change", ()=>{ renderPlanTable(); renderStats(); });
-
-      el("selAll").addEventListener("click", ()=>{ el("outList").querySelectorAll("input[type=checkbox]").forEach(ch=>{ if(!ch.checked) ch.click(); }); });
-      el("clrAll").addEventListener("click", ()=>{ selected.clear(); plan={}; renderOutcomeList(); renderPlanTable(); renderStats(); });
-      el("autoFill").addEventListener("click", autoFillSequential);
-
-      el("downloadXlsx").addEventListener("click", downloadXlsxSingle);
-el("bulkSearch").addEventListener("input", debounce(renderBulkList,120));
-      el("bulkAll").addEventListener("click", ()=>{ el("bulkList").querySelectorAll("input.bulkChk").forEach(c=>c.checked=true); });
-      el("bulkNone").addEventListener("click", ()=>{ el("bulkList").querySelectorAll("input.bulkChk").forEach(c=>c.checked=false); });
-el("bulkXlsx").addEventListener("click", bulkZip);
-    }
-
-    async function boot(){
-      initDays(); fillGradeOptions();
-      STUDENTS = await fetchFirstJson(["students.json"]);
-      OUTCOMES = await fetchFirstJson(["kazanimlar.json","kazanımlar.json","kazanımlar.json"]);
-      fillSectionOptions(); fillStudentOptions();
-      fillSubjectOptions(); fillUnitOptions();
-      hook(); setMode("outcomes");
-      renderOutcomeList(); renderPlanTable(); renderStats();
-    }
-
-    boot().catch(err=>{
-      console.error(err);
-      alert("Gerekli dosyalar yüklenemedi.\n\nKontrol: students.json ve kazanimlar.json (veya kazanımlar.json) repo kök dizininde olmalı.");
+      html += `</tr>`;
     });
-  </script>
+    html += `</tbody></table></div>`;
+    return html;
+  }
+
+  function renderPreview(){
+    const students = getSelectedStudents();
+    const box = el("preview");
+    box.innerHTML = "";
+
+    if(students.length===0){
+      box.innerHTML = `<div class="hint">Soldan öğrencileri seçince burada önizleme açılacak. Sayfa uzamaz; her öğrenci ayrı açılır/kapanır.</div>`;
+      updateCounts();
+      return;
+    }
+
+    students.forEach(st=>{
+      const plan = ensurePlanFor(st);
+      const det = document.createElement("details");
+      det.open = (students.length===1);
+      det.innerHTML = `
+        <summary>
+          <div class="sumLeft">
+            <div class="s1">${escapeHtml(st.name || "-")}</div>
+            <div class="s2">${escapeHtml(st.grade)}-${escapeHtml(st.section)} • No: ${escapeHtml(st.num||"-")}</div>
+          </div>
+          <div class="sumRight">Programı düzenle</div>
+        </summary>
+        <div class="panel">
+          ${renderPlanTableHtml(st, plan)}
+        </div>
+      `;
+      box.appendChild(det);
+    });
+
+    // bind selects
+    box.querySelectorAll("select").forEach(sel=>{
+      sel.addEventListener("change", ()=>{
+        const k = sel.dataset.k;
+        const day = parseInt(sel.dataset.day,10);
+        const slot = parseInt(sel.dataset.slot,10);
+        const plan = planByStudent.get(k);
+        if(!plan) return;
+        if(!plan[day]) plan[day] = [];
+        plan[day][slot] = sel.value;
+      });
+    });
+
+    updateCounts();
+  }
+
+  // ------------------------------------------------------------
+  //  COUNTS
+  // ------------------------------------------------------------
+  function updateCounts(){
+    const perDay = parseInt(el("perDay").value,10);
+    const actDays = getActiveDays();
+    el("outCount").textContent = String(selectedOut.size);
+    const stuCount = getSelectedStudents().length;
+    el("stuCount").textContent = String(stuCount);
+    el("slotCount").textContent = String(actDays.length * perDay);
+  }
+
+  // ------------------------------------------------------------
+  //  DATE
+  // ------------------------------------------------------------
+  function getDateText(){
+    const mode = el("dateMode").value;
+    if(mode==="none") return "";
+    if(mode==="today"){
+      const d = new Date();
+      const dd = String(d.getDate()).padStart(2,"0");
+      const mm = String(d.getMonth()+1).padStart(2,"0");
+      const yy = d.getFullYear();
+      return `${dd}.${mm}.${yy}`;
+    }
+    const v = el("dateInput").value;
+    if(!v) return "";
+    const [yy,mm,dd] = v.split("-");
+    return `${dd}.${mm}.${yy}`;
+  }
+
+  // ------------------------------------------------------------
+  //  EXCEL EXPORT (multi-student -> each student a sheet)
+  // ------------------------------------------------------------
+  function subjectMeta(name){
+    if(!name) return SUBJECT_META.default;
+    if(SUBJECT_META[name]) return SUBJECT_META[name];
+    const n = name.toString().toLocaleLowerCase("tr-TR");
+    if(n.includes("mat")) return SUBJECT_META["Matematik"];
+    if(n.includes("türk")) return SUBJECT_META["Türkçe"];
+    if(n.includes("fen")) return SUBJECT_META["Fen Bilimleri"];
+    if(n.includes("sos")) return SUBJECT_META["Sosyal Bilgiler"];
+    if(n.includes("ink")) return SUBJECT_META["İnkılap Tarihi"];
+    if(n.includes("din")) return SUBJECT_META["Din Kültürü"];
+    if(n.includes("ing")) return SUBJECT_META["İngilizce"];
+    return {code:name.slice(0,4).toUpperCase(), emoji:"", fill:"F3F4F6"};
+  }
+
+  async function exportExcel(){
+    const students = getSelectedStudents();
+    if(students.length===0) return alert("Önce en az 1 öğrenci seç.");
+    if(selectedOut.size===0) return alert("En az 1 kazanım seç.");
+
+    const perDay = parseInt(el("perDay").value,10);
+    const actDays = getActiveDays();
+    if(actDays.length===0) return alert("En az 1 gün seç.");
+    const dateText = getDateText();
+    const teacherNote = (el("teacherNote").value || "").trim();
+    const qPreset = (el("qPreset").value || "").trim();
+
+    // build quick byId map for selected grade
+    const wb = new ExcelJS.Workbook();
+    wb.creator = "Altınküre";
+    wb.created = new Date();
+
+    for(const st of students){
+      const wsNameRaw = `${st.num}-${st.name}`.slice(0,31);
+      const ws = wb.addWorksheet(wsNameRaw);
+
+      ws.pageSetup = { orientation:"landscape", fitToPage:true, fitToWidth:1, fitToHeight:1, horizontalCentered:true };
+
+      const lastColLetter = (perDay===3) ? "G" : "E";
+      const lastColIdx = (perDay===3) ? 7 : 5;
+
+      ws.columns = (perDay===3)
+        ? [{width:14},{width:34},{width:7},{width:34},{width:7},{width:34},{width:7}]
+        : [{width:14},{width:34},{width:7},{width:34},{width:7}];
+
+      function fill(cell, argb){ cell.fill = {type:"pattern",pattern:"solid",fgColor:{argb}}; }
+      function setFont(cell, opts){ cell.font = Object.assign({name:"Calibri", size:11}, (opts||{})); }
+      function borderAll(r1,c1,r2,c2){
+        for(let r=r1;r<=r2;r++){
+          for(let c=c1;c<=c2;c++){
+            ws.getCell(r,c).border = {
+              top:{style:"thick",color:{argb:"FF22304A"}},
+              left:{style:"thick",color:{argb:"FF22304A"}},
+              bottom:{style:"thick",color:{argb:"FF22304A"}},
+              right:{style:"thick",color:{argb:"FF22304A"}},
+            };
+          }
+        }
+      }
+      function center(cell){ cell.alignment = {vertical:"middle",horizontal:"center",wrapText:true}; }
+      function left(cell){ cell.alignment = {vertical:"middle",horizontal:"left",wrapText:true}; }
+
+      // header
+      ws.mergeCells(`A1:${lastColLetter}1`);
+      ws.getRow(1).height = 24;
+      ws.getCell("A1").value = "ALTINKÜRE ORTAOKULU";
+      fill(ws.getCell("A1"), "FF0E2A47");
+      setFont(ws.getCell("A1"), {bold:true, color:{argb:"FFFFFFFF"}, size:13});
+      left(ws.getCell("A1"));
+
+      ws.mergeCells(`A2:${lastColLetter}2`);
+      ws.getRow(2).height = 20;
+      ws.getCell("A2").value = `Öğrenci Bazlı Haftalık Çalışma Programı | ${st.grade}-${st.section} • No: ${st.num||""} • ${st.name}`;
+      fill(ws.getCell("A2"), "FF0E2A47");
+      setFont(ws.getCell("A2"), {bold:true, color:{argb:"FFFFFFFF"}, size:10});
+      left(ws.getCell("A2"));
+
+      if(dateText){
+        ws.mergeCells(`A3:${lastColLetter}3`);
+        ws.getRow(3).height = 16;
+        ws.getCell("A3").value = `Tarih: ${dateText}`;
+        fill(ws.getCell("A3"), "FFEEF2FF");
+        setFont(ws.getCell("A3"), {bold:true, color:{argb:"FF111827"}, size:10});
+        left(ws.getCell("A3"));
+      }else{
+        ws.getRow(3).height = 6;
+      }
+
+      const hdrRow = 4;
+      ws.getRow(hdrRow).height = 20;
+      const hdrs = ["Gün","1. Ders","Soru","2. Ders","Soru"].concat(perDay===3?["3. Ders","Soru"]:[]);
+      hdrs.forEach((h, i)=>{
+        const cell = ws.getCell(hdrRow, i+1);
+        cell.value = h;
+        fill(cell, "FF0E2A47");
+        setFont(cell, {bold:true, color:{argb:"FFFFFFFF"}, size:10});
+        center(cell);
+      });
+
+      // map id -> item for this grade
+      const gradeObj = (OUTCOMES.grades && OUTCOMES.grades[st.grade]) ? OUTCOMES.grades[st.grade] : {};
+      const byId = new Map();
+      Object.keys(gradeObj).forEach(subj=>{
+        (gradeObj[subj]||[]).forEach(it=>byId.set(it.id, {subj, ...it}));
+      });
+
+      const plan = ensurePlanFor(st);
+      const startRow = 5;
+      for(let i=0;i<7;i++){
+        const r = startRow+i;
+        ws.getRow(r).height = 34;
+        const dayCell = ws.getCell(r,1);
+        dayCell.value = DAYS[i];
+        fill(dayCell, "FF0E2A47");
+        setFont(dayCell, {bold:true, color:{argb:"FFFFFFFF"}, size:10});
+        center(dayCell);
+
+        const active = actDays.includes(i);
+        for(let s=0;s<perDay;s++){
+          const colLesson = (s===0)?2:(s===1)?4:6;
+          const colQ      = (s===0)?3:(s===1)?5:7;
+
+          const lessonCell = ws.getCell(r, colLesson);
+          const qCell = ws.getCell(r, colQ);
+
+          if(!active){
+            fill(lessonCell, "FFF2F4F7");
+            fill(qCell, "FFF2F4F7");
+            lessonCell.value = "";
+            qCell.value = "";
+            left(lessonCell); center(qCell);
+            continue;
+          }
+
+          const id = (plan[i]||[])[s] || "";
+          const item = id ? byId.get(id) : null;
+          if(!item){
+            lessonCell.value = "";
+            qCell.value = qPreset ? Number(qPreset) : "";
+            fill(lessonCell, "FFFFFFFF");
+            fill(qCell, "FFFFF7CC");
+            left(lessonCell); center(qCell);
+            continue;
+          }
+
+          const meta = subjectMeta(item.subj);
+          const title = `${meta.emoji} ${meta.code} • ${item.subj}`.trim();
+          const topic = (item.text||"").toString().trim();
+          lessonCell.value = title + "\n" + topic;
+          fill(lessonCell, "FF"+meta.fill);
+          setFont(lessonCell, {bold:true, size:10, color:{argb:"FF111827"}});
+          left(lessonCell);
+
+          qCell.value = qPreset ? Number(qPreset) : "";
+          fill(qCell, "FFFFF7CC");
+          setFont(qCell, {bold:true, size:10, color:{argb:"FF111827"}});
+          center(qCell);
+        }
+      }
+
+      const lastRow = startRow+6;
+      borderAll(hdrRow, 1, lastRow, lastColIdx);
+
+      // warning
+      const uRow = lastRow + 2;
+      ws.mergeCells(`A${uRow}:${lastColLetter}${uRow}`);
+      ws.getRow(uRow).height = 18;
+      ws.getCell(`A${uRow}`).value = "Uyarı: Ödevleri aksatmayacak şekilde, seçtiğin kazanımlara çalışıyorsun. Soru çözerek konuları pekiştiriyorsun.";
+      fill(ws.getCell(`A${uRow}`), "FFFFE7E7");
+      setFont(ws.getCell(`A${uRow}`), {bold:true, italic:true, color:{argb:"FF7A0000"}, size:10});
+      left(ws.getCell(`A${uRow}`));
+      borderAll(uRow,1,uRow,lastColIdx);
+
+      if(teacherNote){
+        const nRow = uRow+1;
+        ws.mergeCells(`A${nRow}:${lastColLetter}${nRow}`);
+        ws.getRow(nRow).height = 34;
+        ws.getCell(`A${nRow}`).value = "Öğretmen Notu: " + teacherNote;
+        fill(ws.getCell(`A${nRow}`), "FFEEF2FF");
+        setFont(ws.getCell(`A${nRow}`), {size:10, color:{argb:"FF111827"}});
+        left(ws.getCell(`A${nRow}`));
+        borderAll(nRow,1,nRow,lastColIdx);
+      }
+    }
+
+    const buf = await wb.xlsx.writeBuffer();
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth()+1).padStart(2,"0");
+    const dd = String(now.getDate()).padStart(2,"0");
+    saveAs(new Blob([buf], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}), `Altinkure_Manuel_v2_${yyyy}-${mm}-${dd}.xlsx`);
+  }
+
+  // ------------------------------------------------------------
+  //  EVENTS
+  // ------------------------------------------------------------
+  function debounce(fn, ms){
+    let t=null;
+    return function(){ clearTimeout(t); t=setTimeout(()=>fn(), ms); }
+  }
+
+  function hook(){
+    el("dateMode").addEventListener("change", ()=>{
+      el("dateInput").disabled = (el("dateMode").value !== "manual");
+    });
+
+    el("grade").addEventListener("change", ()=>{
+      fillSection();
+      renderStudentList();
+      fillSubject();
+      fillUnit();
+      renderOutcomeList();
+      renderPreview();
+    });
+
+    el("section").addEventListener("change", ()=>{
+      renderStudentList();
+      renderPreview();
+    });
+
+    el("stuSearch").addEventListener("input", debounce(renderStudentList, 120));
+
+    el("perDay").addEventListener("change", ()=>{
+      // adjust all existing plans
+      const students = getSelectedStudents();
+      students.forEach(st=>ensurePlanFor(st));
+      updateCounts();
+      renderPreview();
+    });
+
+    el("days").addEventListener("change", ()=>{
+      const students = getSelectedStudents();
+      students.forEach(st=>ensurePlanFor(st));
+      updateCounts();
+      renderPreview();
+    });
+
+    el("subject").addEventListener("change", ()=>{
+      fillUnit();
+      renderOutcomeList();
+    });
+    el("unit").addEventListener("change", renderOutcomeList);
+    el("q").addEventListener("input", debounce(renderOutcomeList, 120));
+
+    el("selAllStu").addEventListener("click", ()=>{
+      el("studentList").querySelectorAll("input.stuChk").forEach(ch=> ch.checked = true);
+      updateCounts();
+      renderPreview();
+    });
+    el("clrAllStu").addEventListener("click", ()=>{
+      el("studentList").querySelectorAll("input.stuChk").forEach(ch=> ch.checked = false);
+      updateCounts();
+      renderPreview();
+    });
+    el("studentList").addEventListener("change", ()=>{
+      updateCounts();
+      renderPreview();
+    });
+
+    el("selAllOut").addEventListener("click", ()=>{
+      el("outList").querySelectorAll("input.outChk").forEach(ch=>{
+        if(!ch.checked) ch.click();
+      });
+    });
+    el("clrAllOut").addEventListener("click", ()=>{
+      selectedOut.clear();
+      // clear plans too
+      planByStudent.clear();
+      renderOutcomeList();
+      renderPreview();
+    });
+
+    el("btnAutoFill").addEventListener("click", autoFillSequentialForSelectedStudents);
+    el("btnExcel").addEventListener("click", exportExcel);
+    el("btnClear").addEventListener("click", ()=>{
+      // only selections, don't touch loaded files
+      selectedOut.clear();
+      planByStudent.clear();
+      el("teacherNote").value = "";
+      el("qPreset").value = "";
+      el("studentList").querySelectorAll("input.stuChk").forEach(ch=> ch.checked = false);
+      renderOutcomeList();
+      renderPreview();
+      updateCounts();
+    });
+  }
+
+  // ------------------------------------------------------------
+  //  BOOT
+  // ------------------------------------------------------------
+  async function boot(){
+    initDays();
+    STUDENTS = await fetchFirstJson(["students.json","students_simple_5-8.json","students_compat.json"]);
+    OUTCOMES = await fetchFirstJson(["kazanimlar.json","kazanımlar.json","kazanımlar.json"]);
+
+    fillSection();
+    renderStudentList();
+    fillSubject();
+    fillUnit();
+    hook();
+    renderOutcomeList();
+    renderPreview();
+    updateCounts();
+  }
+
+  boot().catch(err=>{
+    console.error(err);
+    alert("Gerekli dosyalar yüklenemedi.\n\nKontrol: students.json ve kazanimlar.json repo kök dizininde olmalı.");
+  });
+</script>
 </body>
 </html>
-
 
