@@ -916,14 +916,14 @@
     for(const st of students){
       const wsNameRaw = `${st.num}-${st.name}`.slice(0,31);
       const ws = wb.addWorksheet(wsNameRaw);
-      ws.pageSetup = { orientation:"landscape", paperSize: 9, fitToPage:true, fitToWidth:1, fitToHeight:1, horizontalCentered:true, verticalCentered:true };
+      ws.pageSetup = { orientation:"landscape", paperSize:9, fitToPage:true, fitToWidth:1, fitToHeight:1, horizontalCentered:true, verticalCentered:true };
 
       const lastColLetter = (perDay===3) ? "G" : "E";
       const lastColIdx = (perDay===3) ? 7 : 5;
 
       ws.columns = (perDay===3)
-        ? [{width:14},{width:38},{width:10},{width:38},{width:10},{width:38},{width:10}]
-        : [{width:14},{width:38},{width:10},{width:38},{width:10}];
+        ? [{width:14},{width:34},{width:8},{width:34},{width:8},{width:34},{width:8}]
+        : [{width:14},{width:34},{width:8},{width:34},{width:8}];
 
       function fill(cell, argb){ cell.fill = {type:"pattern",pattern:"solid",fgColor:{argb}}; }
       function setFont(cell, opts){ cell.font = Object.assign({name:"Calibri", size:11}, (opts||{})); }
@@ -945,14 +945,14 @@
       ws.mergeCells(`A1:${lastColLetter}1`);
       ws.getRow(1).height = 24;
       ws.getCell("A1").value = "ALTINKÜRE ORTAOKULU";
-      fill(ws.getCell("A1"), "FF1F3B5B");
+      fill(ws.getCell("A1"), "FF0E2A47");
       setFont(ws.getCell("A1"), {bold:true, color:{argb:"FFFFFFFF"}, size:13});
       left(ws.getCell("A1"));
 
       ws.mergeCells(`A2:${lastColLetter}2`);
       ws.getRow(2).height = 20;
       ws.getCell("A2").value = `Öğrenci Bazlı Haftalık Çalışma Programı | ${st.grade}-${st.section} • No: ${st.num||""} • ${st.name}`;
-      fill(ws.getCell("A2"), "FF1F3B5B");
+      fill(ws.getCell("A2"), "FF0E2A47");
       setFont(ws.getCell("A2"), {bold:true, color:{argb:"FFFFFFFF"}, size:10});
       left(ws.getCell("A2"));
 
@@ -973,8 +973,8 @@
       hdrs.forEach((h, i)=>{
         const cell = ws.getCell(hdrRow, i+1);
         cell.value = h;
-        fill(cell, "FF1F3B5B");
-        setFont(cell, {bold:true, color:{argb:"FFFFFFFF"}, size:10});
+        fill(cell, "FFDBEAFE");
+        setFont(cell, {bold:true, color:{argb:"FF111827"}, size:10});
         center(cell);
       });
 
@@ -985,8 +985,8 @@
 
         const dayCell = ws.getCell(r,1);
         dayCell.value = DAYS[day];
-        fill(dayCell, "FF203B57");
-        setFont(dayCell, {bold:true, color:{argb:"FFFFFFFF"}, size:10});
+        fill(dayCell, "FFDBEAFE");
+        setFont(dayCell, {bold:true, color:{argb:"FF111827"}, size:10});
         center(dayCell);
 
         const active = actDays.has(day);
@@ -1024,57 +1024,35 @@
           left(lessonCell);
 
           qCell.value = cell.q ? Number(cell.q) : "";
-          fill(qCell, "FFF3ECD0");
+          fill(qCell, "FFFFF7CC");
           setFont(qCell, {bold:true, size:10, color:{argb:"FF111827"}});
           center(qCell);
         }
       }
 
-      const lastRow = startRow+6;
-      borderAll(hdrRow, 1, lastRow, lastColIdx);
+      
 
-      // column widths (auto but capped) + print-friendly
-      // A: Gün, then repeating (Ders, Soru) blocks
-      const MAX_LESSON_W = 48;
-      const MIN_LESSON_W = 22;
-      const DAY_W = 16;
-      const Q_W = 10;
-
-      ws.columns.forEach((col, i)=>{
-        // i is 1-based column index in ExcelJS
-        if(i === 1){
-          col.width = DAY_W;
-          return;
-        }
-        // pattern: 2=1.Ders,3=Soru,4=2.Ders,5=Soru...
-        const isQuestionCol = (i % 2 === 1); // 3,5,7... are question cols
-        if(isQuestionCol){
-          col.width = Q_W;
-          return;
-        }
-        // lesson columns: auto width based on longest line, but capped
-        let max = MIN_LESSON_W;
-        col.eachCell({ includeEmpty: true }, cell=>{
-          const v = (cell.value ?? "").toString();
-          const longestLine = v.split(/
-?
-/).reduce((m,s)=>Math.max(m, s.length), 0);
-          max = Math.max(max, longestLine + 2);
-        });
-        col.width = Math.min(MAX_LESSON_W, Math.max(MIN_LESSON_W, max));
-      });
-
-      // Fit to A4 landscape on print (Excel)
-      ws.pageSetup = {
-        paperSize: 9, // A4
-        orientation: "landscape",
-        fitToPage: true,
-        fitToWidth: 1,
-        fitToHeight: 1,
-        horizontalCentered: true,
-        verticalCentered: true,
-        margins: { left: 0.3, right: 0.3, top: 0.4, bottom: 0.4, header: 0.2, footer: 0.2 }
-      };
+// row heights: wrap instead of widening columns
+for(let day=0; day<7; day++){
+  const r = startRow+day;
+  let maxLines = 1;
+  for(let s=0;s<perDay;s++){
+    const colLesson = (s===0)?2:(s===1)?4:6;
+    const v = ws.getCell(r, colLesson).value;
+    const txt = (v===null || v===undefined) ? "" : v.toString();
+    const base = txt.split("\n");
+    // rough chars-per-line by column width (34 => ~28 chars)
+    let lines = 0;
+    for(const part of base){
+      const L = part.length;
+      lines += Math.max(1, Math.ceil(L / 28));
+    }
+    maxLines = Math.max(maxLines, lines);
+  }
+  ws.getRow(r).height = Math.min(110, 18*maxLines + 10);
+}
+const lastRow = startRow+6;
+      borderAll(hdrRow, 1, lastRow, lastColIdx); 
         col.width = Math.max(col.width || 10, max + 2);
       });
 
