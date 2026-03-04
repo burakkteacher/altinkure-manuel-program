@@ -894,9 +894,13 @@
     const students = getSelectedStudents();
     if(students.length===0) return alert("Önce en az 1 öğrenci seç.");
     ensureSharedPlan();
+
     const perDay = parseInt(el("perDay").value,10);
+    const use3 = (perDay === 3);
+
     const actDays = new Set(getActiveDays());
     if(actDays.size===0) return alert("En az 1 gün seç.");
+
     const dateText = getDateText();
     const teacherNote = (el("teacherNote").value || "").trim();
 
@@ -909,190 +913,313 @@
       (gradeObj[subj]||[]).forEach(it=>byId.set(it.id, {subject:subj, ...it}));
     });
 
+    const TITLE = "Öğrenci Bazlı Haftalık Çalışma Programı";
+
+    // Logo helper (optional)
+    async function fetchImageAsBase64(url){
+      try{
+        const res = await fetch(url, {cache:"no-store"});
+        if(!res.ok) throw new Error("logo fetch failed");
+        const blob = await res.blob();
+        return await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result.split(",")[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      }catch(_){
+        return null;
+      }
+    }
+
+    function thickBorder(){
+      return {
+        top:{style:"thick", color:{argb:"FF22304A"}},
+        left:{style:"thick", color:{argb:"FF22304A"}},
+        bottom:{style:"thick", color:{argb:"FF22304A"}},
+        right:{style:"thick", color:{argb:"FF22304A"}},
+      };
+    }
+    function fillHex(hex){
+      return { type:"pattern", pattern:"solid", fgColor:{argb:"FF"+hex.replace("#","")} };
+    }
+    function font(opts){
+      return Object.assign({name:"Calibri", size:11}, opts||{});
+    }
+    function center(){ return { vertical:"middle", horizontal:"center", wrapText:true }; }
+    function leftWrap(){ return { vertical:"middle", horizontal:"left", wrapText:true }; }
+
     const wb = new ExcelJS.Workbook();
     wb.creator = "Altınküre";
     wb.created = new Date();
 
+    // Add logo to workbook if available
+    let logoId = null;
+    const logoB64 = await fetchImageAsBase64("logo.png");
+    if(logoB64){
+      try{ logoId = wb.addImage({ base64: logoB64, extension:"png" }); }catch(_){ logoId = null; }
+    }
+
     for(const st of students){
       const wsNameRaw = `${st.num}-${st.name}`.slice(0,31);
       const ws = wb.addWorksheet(wsNameRaw);
-      ws.pageSetup = { paperSize:9, orientation:"landscape", fitToPage:true, fitToWidth:1, fitToHeight:0, horizontalCentered:true, margins:{left:0.3,right:0.3,top:0.4,bottom:0.4,header:0.2,footer:0.2} };
 
-      const lastColLetter = (perDay===3) ? "G" : "E";
-      const lastColIdx = (perDay===3) ? 7 : 5;
+      // Columns (always A..J like analizindex.html)
+      ws.columns = [
+        { key:"gun", width: 14 },
+        { key:"d1",  width: 34 },
+        { key:"s1",  width: 7  },
+        { key:"c1",  width: 4  },
+        { key:"d2",  width: 34 },
+        { key:"s2",  width: 7  },
+        { key:"c2",  width: 4  },
+        { key:"d3",  width: 34 },
+        { key:"s3",  width: 7  },
+        { key:"c3",  width: 4  },
+      ];
 
-      ws.columns = (perDay===3)
-        ? [{width:12},{width:26},{width:6},{width:26},{width:6},{width:26},{width:6}]
-        : [{width:12},{width:28},{width:6},{width:28},{width:6}];
+      // Hide 3rd lesson columns when perDay=2
+      ws.getColumn(8).hidden  = !use3;
+      ws.getColumn(9).hidden  = !use3;
+      ws.getColumn(10).hidden = !use3;
 
-      function fill(cell, argb){ cell.fill = {type:"pattern",pattern:"solid",fgColor:{argb}}; }
-      function setFont(cell, opts){ cell.font = Object.assign({name:"Calibri", size:11}, (opts||{})); }
-      function borderAll(r1,c1,r2,c2){
-        for(let r=r1;r<=r2;r++){
-          for(let c=c1;c<=c2;c++){
-            ws.getCell(r,c).border = {
-              top:{style:"thick",color:{argb:"FF22304A"}},
-              left:{style:"thick",color:{argb:"FF22304A"}},
-              bottom:{style:"thick",color:{argb:"FF22304A"}},
-              right:{style:"thick",color:{argb:"FF22304A"}},
-            };
-          }
-        }
+      // Header row 1 (A1..G1 merged) — same as analiz
+      ws.mergeCells("A1","G1");
+      const h1 = ws.getCell("A1");
+      h1.value = "ALTINKÜRE ORTAOKULU";
+      h1.font = {name:"Calibri", size:16, bold:true, color:{argb:"FFFFFFFF"}};
+      h1.fill = {type:"pattern", pattern:"solid", fgColor:{argb:"FF0E2A47"}};
+      h1.alignment = {vertical:"middle", horizontal:"left", wrapText:true};
+      h1.border = thickBorder();
+      ws.getRow(1).height = 28;
+
+      // Row 2 split to avoid date clipping
+      ws.mergeCells("A2","E2");
+      ws.mergeCells("F2","J2");
+
+      const h2L = ws.getCell("A2");
+      h2L.value = `${TITLE} | ${st.grade}-${st.section} • No: ${st.num||""} • ${st.name||""}`;
+      h2L.font = {name:"Calibri", size:11, bold:true, color:{argb:"FFFFFFFF"}};
+      h2L.fill = {type:"pattern", pattern:"solid", fgColor:{argb:"FF0E2A47"}};
+      h2L.alignment = {vertical:"middle", horizontal:"left", wrapText:true};
+      h2L.border = thickBorder();
+
+      const h2R = ws.getCell("F2");
+      h2R.value = dateText ? `Tarih: ${dateText}` : "";
+      h2R.font = {name:"Calibri", size:11, bold:true, color:{argb:"FFFFFFFF"}};
+      h2R.fill = {type:"pattern", pattern:"solid", fgColor:{argb:"FF0E2A47"}};
+      h2R.alignment = {vertical:"middle", horizontal:"right", wrapText:true, shrinkToFit:true};
+      h2R.border = thickBorder();
+      ws.getRow(2).height = 24;
+
+      // Place logo on top right (optional)
+      if(logoId){
+        try{
+          ws.addImage(logoId, {
+            tl: { col: 7.6, row: 0.15 },
+            ext: { width: 110, height: 40 }
+          });
+        }catch(_){}
       }
-      function center(cell){ cell.alignment = {vertical:"middle",horizontal:"center",wrapText:true}; }
-      function left(cell){ cell.alignment = {vertical:"middle",horizontal:"left",wrapText:true}; }
 
-      ws.mergeCells(`A1:${lastColLetter}1`);
-      ws.getRow(1).height = 24;
-      ws.getCell("A1").value = "ALTINKÜRE ORTAOKULU";
-      fill(ws.getCell("A1"), "FF0E2A47");
-      setFont(ws.getCell("A1"), {bold:true, color:{argb:"FFFFFFFF"}, size:13});
-      left(ws.getCell("A1"));
-
-      ws.mergeCells(`A2:${lastColLetter}2`);
-      ws.getRow(2).height = 20;
-      ws.getCell("A2").value = `Öğrenci Bazlı Haftalık Çalışma Programı | ${st.grade}-${st.section} • No: ${st.num||""} • ${st.name}`;
-      fill(ws.getCell("A2"), "FF0E2A47");
-      setFont(ws.getCell("A2"), {bold:true, color:{argb:"FFFFFFFF"}, size:10});
-      left(ws.getCell("A2"));
-
-      if(dateText){
-        ws.mergeCells(`A3:${lastColLetter}3`);
-        ws.getRow(3).height = 16;
-        ws.getCell("A3").value = `Tarih: ${dateText}`;
-        fill(ws.getCell("A3"), "FFEEF2FF");
-        setFont(ws.getCell("A3"), {bold:true, color:{argb:"FF111827"}, size:10});
-        left(ws.getCell("A3"));
-      }else{
-        ws.getRow(3).height = 6;
+      // Table header at row 4
+      const startRow = 4;
+      ws.getRow(startRow).height = 24;
+      const headers = [
+        {cell:"A", val:"Gün"},
+        {cell:"B", val:"1. Ders"},
+        {cell:"C", val:"Soru"},
+        {cell:"D", val:"☐"},
+        {cell:"E", val:"2. Ders"},
+        {cell:"F", val:"Soru"},
+        {cell:"G", val:"☐"},
+        {cell:"H", val:"3. Ders (ops.)"},
+        {cell:"I", val:"Soru"},
+        {cell:"J", val:"☐"},
+      ];
+      for(const h of headers){
+        const c = ws.getCell(`${h.cell}${startRow}`);
+        c.value = h.val;
+        c.font = font({bold:true, color:{argb:"FF111827"}});
+        c.fill = fillHex("#DBEAFE");
+        c.alignment = center();
+        c.border = thickBorder();
       }
 
-      const hdrRow = 4;
-      ws.getRow(hdrRow).height = 20;
-      const hdrs = ["Gün","1. Ders","Soru","2. Ders","Soru"].concat(perDay===3?["3. Ders","Soru"]:[]);
-      hdrs.forEach((h, i)=>{
-        const cell = ws.getCell(hdrRow, i+1);
-        cell.value = h;
-        fill(cell, "FFDBEAFE");
-        setFont(cell, {bold:true, color:{argb:"FF111827"}, size:10});
-        center(cell);
-      });
+      // Day rows start at row 5
+      const baseRow = startRow + 1;
 
-      const startRow = 5;
       for(let day=0; day<7; day++){
-        const r = startRow+day;
-        ws.getRow(r).height = 40;
+        const r = ws.getRow(baseRow+day);
+        r.height = 44;
 
-        const dayCell = ws.getCell(r,1);
+        // Day cell
+        const dayCell = ws.getCell(`A${baseRow+day}`);
         dayCell.value = DAYS[day];
-        fill(dayCell, "FFDBEAFE");
-        setFont(dayCell, {bold:true, color:{argb:"FF111827"}, size:10});
-        center(dayCell);
+        dayCell.font = font({bold:true, color:{argb:"FF111827"}});
+        dayCell.fill = fillHex("#DBEAFE");
+        dayCell.alignment = center();
+        dayCell.border = thickBorder();
 
         const active = actDays.has(day);
 
-        for(let s=0;s<perDay;s++){
-          const colLesson = (s===0)?2:(s===1)?4:6;
-          const colQ      = (s===0)?3:(s===1)?5:7;
+        const slots = [
+          {slot:0, colD:"B", colS:"C", colC:"D"},
+          {slot:1, colD:"E", colS:"F", colC:"G"},
+          {slot:2, colD:"H", colS:"I", colC:"J"},
+        ];
 
-          const lessonCell = ws.getCell(r, colLesson);
-          const qCell = ws.getCell(r, colQ);
+        for(let s=0; s<slots.length; s++){
+          const sl = slots[s];
+          const hidden = (s===2 && !use3);
 
-          if(!active){
-            fill(lessonCell, "FFF2F4F7");
-            fill(qCell, "FFF2F4F7");
-            lessonCell.value = "";
-            qCell.value = "";
-            left(lessonCell); center(qCell);
+          const dCell = ws.getCell(`${sl.colD}${baseRow+day}`);
+          const sCell = ws.getCell(`${sl.colS}${baseRow+day}`);
+          const cCell = ws.getCell(`${sl.colC}${baseRow+day}`);
+
+          dCell.border = thickBorder();
+          sCell.border = thickBorder();
+          cCell.border = thickBorder();
+
+          if(hidden){
+            dCell.value = null; sCell.value = null; cCell.value = null;
             continue;
           }
 
-          const cell = (sharedPlan[day]||[])[s] || {v:"", q:""};
-          const {subject, topic, unit, isLessonOnly} = cellToLessonAndTopic(cell.v, byId);
+          if(!active){
+            dCell.value = "";
+            sCell.value = "";
+            cCell.value = "";
+            dCell.fill = fillHex("#F3F4F6");
+            sCell.fill = fillHex("#F3F4F6");
+            dCell.alignment = leftWrap();
+            sCell.alignment = center();
+            cCell.alignment = center();
+            continue;
+          }
+
+          const cell = (sharedPlan[day]||[])[sl.slot] || {v:"", q:""};
+          const {subject, topic, isLessonOnly} = cellToLessonAndTopic(cell.v, byId);
 
           if(!subject){
-            lessonCell.value = "";
-            fill(lessonCell, "FFFFFFFF");
+            dCell.value = "";
+            dCell.fill = fillHex("#FFFFFF");
           }else{
             const meta = subjectMeta(subject);
-            const title = `${meta.emoji} ${meta.code} • ${subject}`.trim();
-            const body = isLessonOnly ? "" : (topic || "");
-            lessonCell.value = body ? (title + "\n" + body) : title;
-            fill(lessonCell, "FF"+meta.fill);
-            setFont(lessonCell, {bold:true, size:10, color:{argb:"FF111827"}});
+            const dersText = `${meta.emoji} ${meta.code} • ${subject}`.trim();
+            const konuText = (isLessonOnly ? "" : (topic || ""));
+            dCell.value = konuText ? `${dersText}\n${konuText}` : dersText;
+            dCell.font = font({bold:true});
+            dCell.fill = fillHex("#"+meta.fill);
           }
-          left(lessonCell);
+          dCell.alignment = leftWrap();
 
-          qCell.value = cell.q ? Number(cell.q) : "";
-          fill(qCell, "FFFFF7CC");
-          setFont(qCell, {bold:true, size:10, color:{argb:"FF111827"}});
-          center(qCell);
+          // Question
+          sCell.value = cell.q ? Number(cell.q) : "";
+          sCell.fill = fillHex("#FFF7CC");
+          sCell.font = font({bold:true});
+          sCell.alignment = center();
+
+          // Checkbox
+          cCell.value = "";
+          cCell.alignment = center();
         }
-
-        // Satır yüksekliği: metin çok uzunsa sağa taşmasın, alta insin
-        const lessonCols = perDay===3 ? [2,4,6] : [2,4];
-        let maxLines = 1;
-        for(const c of lessonCols){
-          const cellVal = ws.getCell(r, c).value ? ws.getCell(r, c).value.toString() : "";
-          const colW = Number(ws.getColumn(c).width || 20);
-          const lines = cellVal.split("\n").reduce((acc,line)=>{
-            const len = (line||"").length;
-            const wrap = Math.max(1, Math.ceil(len / Math.max(8, Math.floor(colW*1.15))));
-            return acc + wrap;
-          },0);
-          maxLines = Math.max(maxLines, lines);
-        }
-        ws.getRow(r).height = Math.max(40, Math.min(96, 26 + (maxLines-1)*14));
-
       }
 
-      const lastRow = startRow+6;
-      borderAll(hdrRow, 1, lastRow, lastColIdx);
+      // Warning row (analiz style)
+      const warnRowIdx = baseRow + 7 + 1;
+      ws.mergeCells(`B${warnRowIdx}`, `J${warnRowIdx}`);
 
-      // Sütun genişliği: otomatik ama sınırlı (çok genişlemesin)
-      function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
-      function autoFitCol(colIdx, minW, maxW){
-        let longest = 0;
-        ws.getColumn(colIdx).eachCell({ includeEmpty:true }, cell=>{
-          const v = cell.value ? cell.value.toString() : "";
-          for(const p of v.split("
-")) longest = Math.max(longest, (p||"").length);
-        });
-        const w = clamp(Math.ceil(longest*0.85) + 2, minW, maxW);
-        ws.getColumn(colIdx).width = Math.max(ws.getColumn(colIdx).width || minW, w);
+      const warnLabel = ws.getCell(`A${warnRowIdx}`);
+      warnLabel.value = "Uyarı:";
+      warnLabel.font = font({bold:true, italic:true, color:{argb:"FFB91C1C"}});
+      warnLabel.alignment = {vertical:"middle", horizontal:"left"};
+      warnLabel.border = thickBorder();
+
+      const warnCell = ws.getCell(`B${warnRowIdx}`);
+      warnCell.value = "⚠️ Ödevleri aksatmayacak şekilde, seçtiğin kazanımlara çalışıyorsun. Soru çözerek konuları pekiştiriyorsun.";
+      warnCell.font = font({bold:true, color:{argb:"FF7A1F1F"}});
+      warnCell.fill = fillHex("#FFE7E7");
+      warnCell.alignment = {vertical:"middle", horizontal:"left", wrapText:true};
+      warnCell.border = thickBorder();
+      ws.getRow(warnRowIdx).height = 32;
+
+      // Signature row
+      const signRow = warnRowIdx + 2;
+      ws.mergeCells(`A${signRow}`, `D${signRow}`);
+      ws.mergeCells(`E${signRow}`, `G${signRow}`);
+
+      const s1 = ws.getCell(`A${signRow}`);
+      s1.value = "Öğrenci İmza:";
+      s1.font = font({ bold: true });
+      s1.border = thickBorder();
+
+      const s2 = ws.getCell(`E${signRow}`);
+      s2.value = "Veli İmza:";
+      s2.font = font({ bold: true });
+      s2.border = thickBorder();
+
+      if(use3){
+        ws.mergeCells(`H${signRow}`, `J${signRow}`);
+        const s3 = ws.getCell(`H${signRow}`);
+        s3.value = " ";
+        s3.border = thickBorder();
       }
-      autoFitCol(1, 10, 14); // Gün
-      autoFitCol(2, 22, 30); // 1. Ders
-      autoFitCol(3, 5, 7);   // Soru
-      autoFitCol(4, 22, 30); // 2. Ders
-      autoFitCol(5, 5, 7);   // Soru
-      if(perDay===3){
-        autoFitCol(6, 22, 30);
-        autoFitCol(7, 5, 7);
-      }
+      ws.getRow(signRow).height = 24;
 
-        col.width = Math.max(col.width || 10, max + 2);
-      });
+      // NOT box (same placement logic as analiz)
+      const noteStartCol = use3 ? "H" : "E";
+      const noteEndCol   = use3 ? "J" : "G";
+      const noteTop = signRow + 1;
+      const noteMid = signRow + 2;
+      const noteBottom = signRow + 3;
 
-      const uRow = lastRow + 2;
-      ws.mergeCells(`A${uRow}:${lastColLetter}${uRow}`);
-      ws.getRow(uRow).height = 18;
-      ws.getCell(`A${uRow}`).value = "Uyarı: Ödevleri aksatmayacak şekilde, seçtiğin kazanımlara çalışıyorsun. Soru çözerek konuları pekiştiriyorsun.";
-      fill(ws.getCell(`A${uRow}`), "FFFFE7E7");
-      setFont(ws.getCell(`A${uRow}`), {bold:true, italic:true, color:{argb:"FF7A0000"}, size:10});
-      left(ws.getCell(`A${uRow}`));
-      borderAll(uRow,1,uRow,lastColIdx);
+      ws.mergeCells(`${noteStartCol}${noteTop}`, `${noteEndCol}${noteTop}`);
+      ws.mergeCells(`${noteStartCol}${noteMid}`, `${noteEndCol}${noteBottom}`);
 
+      const noteTitle = ws.getCell(`${noteStartCol}${noteTop}`);
+      noteTitle.value = "NOT";
+      noteTitle.alignment = { vertical:"middle", horizontal:"center" };
+      noteTitle.font = font({ bold:true, color:{argb:"FF111827"} });
+      noteTitle.fill = fillHex("#BFDBFE");
+      noteTitle.border = thickBorder();
+
+      const noteMsg = ws.getCell(`${noteStartCol}${noteMid}`);
+      noteMsg.value = "SINAVZA tarafından yapılan analizle, öncelikli konu listesine göre kişiye özel hazırlanmıştır.";
+      noteMsg.alignment = { vertical:"top", horizontal:"left", wrapText:true };
+      noteMsg.fill = fillHex("#F6F7FB");
+      noteMsg.border = thickBorder();
+      noteMsg.font = font({ size:10 });
+
+      ws.getRow(noteTop).height = 20;
+      ws.getRow(noteMid).height = 46;
+      ws.getRow(noteBottom).height = 10;
+
+      // Optional teacher note (keeps manuel feature, but doesn't disturb the layout)
       if(teacherNote){
-        const nRow = uRow+1;
-        ws.mergeCells(`A${nRow}:${lastColLetter}${nRow}`);
-        ws.getRow(nRow).height = 34;
-        ws.getCell(`A${nRow}`).value = "Öğretmen Notu: " + teacherNote;
-        fill(ws.getCell(`A${nRow}`), "FFEEF2FF");
-        setFont(ws.getCell(`A${nRow}`), {size:10, color:{argb:"FF111827"}});
-        left(ws.getCell(`A${nRow}`));
-        borderAll(nRow,1,nRow,lastColIdx);
+        const tnRow = noteBottom + 1;
+        ws.mergeCells(`A${tnRow}`, `J${tnRow}`);
+        const tn = ws.getCell(`A${tnRow}`);
+        tn.value = "Öğretmen Notu: " + teacherNote;
+        tn.fill = fillHex("#EEF2FF");
+        tn.font = font({size:10});
+        tn.alignment = {vertical:"middle", horizontal:"left", wrapText:true};
+        tn.border = thickBorder();
+        ws.getRow(tnRow).height = 34;
       }
+
+      // Print setup (analiz style)
+      ws.pageSetup = {
+        paperSize: 9, // A4
+        orientation: "landscape",
+        fitToPage: true,
+        fitToWidth: 1,
+        fitToHeight: 0,
+        margins: { left:0.3, right:0.3, top:0.4, bottom:0.4, header:0.2, footer:0.2 }
+      };
+
+      // Freeze panes below header row
+      ws.views = [{ state: "frozen", xSplit: 0, ySplit: startRow }];
     }
 
     const buf = await wb.xlsx.writeBuffer();
