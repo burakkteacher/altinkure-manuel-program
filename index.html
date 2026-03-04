@@ -1022,7 +1022,7 @@
       renderOutcomeList();
       updateCounts();
       renderPreview();
-    });    });
+    });
     el("clrAllOut").addEventListener("click", ()=>{
       selectedOut.clear();
       // clear plans too
@@ -1053,7 +1053,7 @@
     initDays();
     STUDENTS = await fetchFirstJson(["students.json","students_simple_5-8.json","students_compat.json"]);
     OUTCOMES = await fetchFirstJson(["kazanimlar.json","kazanımlar.json","kazanımlar.json"]);
-     sanitizeOutcomes();
+    sanitizeOutcomes();
 
     fillSection();
     renderStudentList();
