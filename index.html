@@ -1185,8 +1185,8 @@ function exportExcel(){
   // ------------------------------------------------------------
   async function boot(){
     initDays();
-    STUDENTS = await fetchFirstJson(["students.json","students_simple_5-8.json","students_compat.json"]);
-    OUTCOMES = await fetchFirstJson(["kazanimlar.json","kazanımlar.json","kazanımlar.json"]);
+    STUDENTS = await fetchFirstJson(["students.json","./students.json","../students.json","data/students.json","./data/students.json","students_simple_5-8.json","students_compat.json"]);
+    OUTCOMES = await fetchFirstJson(["kazanimlar.json","./kazanimlar.json","../kazanimlar.json","data/kazanimlar.json","./data/kazanimlar.json","kazanımlar.json","./kazanımlar.json","../kazanımlar.json"]);
 
     fillSection();
     renderStudentList();
