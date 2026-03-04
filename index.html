@@ -916,14 +916,14 @@
     for(const st of students){
       const wsNameRaw = `${st.num}-${st.name}`.slice(0,31);
       const ws = wb.addWorksheet(wsNameRaw);
-      ws.pageSetup = { orientation:"landscape", paperSize:9, fitToPage:true, fitToWidth:1, fitToHeight:1, horizontalCentered:true, verticalCentered:true };
+      ws.pageSetup = { paperSize:9, orientation:"landscape", fitToPage:true, fitToWidth:1, fitToHeight:0, horizontalCentered:true, margins:{left:0.3,right:0.3,top:0.4,bottom:0.4,header:0.2,footer:0.2} };
 
       const lastColLetter = (perDay===3) ? "G" : "E";
       const lastColIdx = (perDay===3) ? 7 : 5;
 
       ws.columns = (perDay===3)
-        ? [{width:14},{width:34},{width:8},{width:34},{width:8},{width:34},{width:8}]
-        : [{width:14},{width:34},{width:8},{width:34},{width:8}];
+        ? [{width:12},{width:26},{width:6},{width:26},{width:6},{width:26},{width:6}]
+        : [{width:12},{width:28},{width:6},{width:28},{width:6}];
 
       function fill(cell, argb){ cell.fill = {type:"pattern",pattern:"solid",fgColor:{argb}}; }
       function setFont(cell, opts){ cell.font = Object.assign({name:"Calibri", size:11}, (opts||{})); }
@@ -1028,31 +1028,49 @@
           setFont(qCell, {bold:true, size:10, color:{argb:"FF111827"}});
           center(qCell);
         }
+
+        // Satır yüksekliği: metin çok uzunsa sağa taşmasın, alta insin
+        const lessonCols = perDay===3 ? [2,4,6] : [2,4];
+        let maxLines = 1;
+        for(const c of lessonCols){
+          const cellVal = ws.getCell(r, c).value ? ws.getCell(r, c).value.toString() : "";
+          const colW = Number(ws.getColumn(c).width || 20);
+          const lines = cellVal.split("\n").reduce((acc,line)=>{
+            const len = (line||"").length;
+            const wrap = Math.max(1, Math.ceil(len / Math.max(8, Math.floor(colW*1.15))));
+            return acc + wrap;
+          },0);
+          maxLines = Math.max(maxLines, lines);
+        }
+        ws.getRow(r).height = Math.max(40, Math.min(96, 26 + (maxLines-1)*14));
+
       }
 
-      
+      const lastRow = startRow+6;
+      borderAll(hdrRow, 1, lastRow, lastColIdx);
 
-// row heights: wrap instead of widening columns
-for(let day=0; day<7; day++){
-  const r = startRow+day;
-  let maxLines = 1;
-  for(let s=0;s<perDay;s++){
-    const colLesson = (s===0)?2:(s===1)?4:6;
-    const v = ws.getCell(r, colLesson).value;
-    const txt = (v===null || v===undefined) ? "" : v.toString();
-    const base = txt.split("\n");
-    // rough chars-per-line by column width (34 => ~28 chars)
-    let lines = 0;
-    for(const part of base){
-      const L = part.length;
-      lines += Math.max(1, Math.ceil(L / 28));
-    }
-    maxLines = Math.max(maxLines, lines);
-  }
-  ws.getRow(r).height = Math.min(110, 18*maxLines + 10);
-}
-const lastRow = startRow+6;
-      borderAll(hdrRow, 1, lastRow, lastColIdx); 
+      // Sütun genişliği: otomatik ama sınırlı (çok genişlemesin)
+      function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
+      function autoFitCol(colIdx, minW, maxW){
+        let longest = 0;
+        ws.getColumn(colIdx).eachCell({ includeEmpty:true }, cell=>{
+          const v = cell.value ? cell.value.toString() : "";
+          for(const p of v.split("
+")) longest = Math.max(longest, (p||"").length);
+        });
+        const w = clamp(Math.ceil(longest*0.85) + 2, minW, maxW);
+        ws.getColumn(colIdx).width = Math.max(ws.getColumn(colIdx).width || minW, w);
+      }
+      autoFitCol(1, 10, 14); // Gün
+      autoFitCol(2, 22, 30); // 1. Ders
+      autoFitCol(3, 5, 7);   // Soru
+      autoFitCol(4, 22, 30); // 2. Ders
+      autoFitCol(5, 5, 7);   // Soru
+      if(perDay===3){
+        autoFitCol(6, 22, 30);
+        autoFitCol(7, 5, 7);
+      }
+
         col.width = Math.max(col.width || 10, max + 2);
       });
 
