@@ -115,9 +115,10 @@
     .studentTop input{flex:1}
     .studentList{max-height:280px;overflow:auto}
     .stuRow{
-      display:flex;gap:10px;align-items:flex-start;padding:10px;
+      display:flex;gap:10px;align-items:center;padding:10px;
       border-bottom:1px solid rgba(231,233,238,.9);
     }
+    .stuRow input[type=checkbox]{width:18px;height:18px;flex:0 0 auto}
     .stuRow:last-child{border-bottom:none}
     .stuRow .meta{font-size:13px;line-height:1.25}
     .stuRow .meta b{display:block}
@@ -169,13 +170,19 @@
     .panel{
       padding:12px 12px 14px;border-top:1px solid var(--line);background:#fff
     }
-    .plan{overflow:auto;border:1px solid var(--line);border-radius:14px}
+    .plan{overflow:auto;border:1px solid var(--line);border-radius:14px;max-height:520px}
     table{border-collapse:collapse;width:100%;table-layout:fixed}
     th,td{border:2px solid #22304a;padding:10px;vertical-align:top}
     th{background:var(--tableHead);color:#fff;font-size:12px;text-transform:uppercase;letter-spacing:.5px}
     td{background:#fff}
     td select{width:100%;padding:9px 10px;border-radius:12px;border:1px solid var(--line)}
+    td select:disabled{background:#f2f4f7;color:var(--muted);cursor:not-allowed}
     tbody tr{height:74px}
+
+    /* Günler görünür kalsın (sticky başlık + ilk sütun) */
+    .plan thead th{position:sticky;top:0;z-index:3}
+    .plan thead th:first-child{left:0;z-index:4}
+    .plan tbody td:first-child{position:sticky;left:0;z-index:2;background:#fff}
     .note{
       margin-top:10px;border:2px solid #22304a;border-radius:14px;padding:12px;
       background: linear-gradient(180deg, rgba(199,162,58,.10), rgba(58,124,255,.06));
@@ -414,6 +421,17 @@
     return (STUDENTS && STUDENTS.classes && STUDENTS.classes[key]) ? STUDENTS.classes[key] : [];
   }
 
+  function getStudentsSorted(grade, section){
+    const arr = [...getStudentsIn(grade, section)];
+    const numOf = (x)=>{
+      const v = (x.num ?? x.no ?? x.number ?? x.Numara ?? x["Numara"] ?? x["No"] ?? "").toString().trim();
+      const n = parseInt(v,10);
+      return Number.isFinite(n) ? n : 1e9;
+    };
+    arr.sort((a,b)=> numOf(a)-numOf(b) || String((a.name??a.adi??"")) .localeCompare(String((b.name??b.adi??"")),"tr"));
+    return arr;
+  }
+
   function fillSection(){
     const grade = el("grade").value;
     const secSel = el("section");
@@ -428,7 +446,7 @@
     const section = el("section").value;
     const search = (el("stuSearch").value || "").toLocaleLowerCase("tr-TR").trim();
 
-    const list = getStudentsIn(grade, section);
+    const list = getStudentsSorted(grade, section);
     const box = el("studentList");
     box.innerHTML = "";
 
@@ -458,7 +476,7 @@
   function getSelectedStudents(){
     const grade = el("grade").value;
     const section = el("section").value;
-    const list = getStudentsIn(grade, section);
+    const list = getStudentsSorted(grade, section);
     const selected = [];
     el("studentList").querySelectorAll("input.stuChk:checked").forEach(ch=>{
       const idx = parseInt(ch.dataset.idx,10);
@@ -558,20 +576,23 @@
   // ------------------------------------------------------------
   function ensureSharedPlan(){
     const perDay = parseInt(el("perDay").value,10);
-    const actDays = getActiveDays();
-
-    actDays.forEach(i=>{
+    // Günler artık tabloda hep görünüyor. Bu yüzden 7 günün de slot yapısını koruyoruz.
+    for(let i=0;i<7;i++){
       if(!sharedPlan[i] || sharedPlan[i].length !== perDay) sharedPlan[i] = Array(perDay).fill("");
-    });
-    Object.keys(sharedPlan).forEach(k=>{
-      if(!actDays.includes(parseInt(k,10))) delete sharedPlan[k];
-    });
+    }
     return sharedPlan;
   }
 
 
   function buildOptionsHtml(current){
     const showSubj = !!el("showSubject")?.checked;
+    const grade = el("grade").value;
+
+    // 1) Ders isimleri (kazanım seçilmeden de seçilebilsin)
+    const gradeObj = (OUTCOMES && OUTCOMES.grades) ? (OUTCOMES.grades[grade] || {}) : {};
+    const allSubjects = Object.keys(gradeObj).sort((a,b)=>a.localeCompare(b,"tr"));
+
+    // 2) Seçili kazanımlar
     const items = Array.from(selectedOut.values());
     items.sort((a,b)=>
       (a.subject||"").localeCompare(b.subject||"tr") ||
@@ -585,6 +606,18 @@
     });
 
     let html = `<option value="">(Boş)</option>`;
+
+    // Ders seçenekleri (yalnızca ders)
+    if(allSubjects.length){
+      html += `<optgroup label="Ders (kazanım yok)">`;
+      allSubjects.forEach(subj=>{
+        const val = `SUBJ:${subj}`;
+        const sel = String(current)===String(val) ? "selected" : "";
+        html += `<option value="${escapeHtml(val)}" ${sel}>${escapeHtml(subj)}</option>`;
+      });
+      html += `</optgroup>`;
+    }
+
     Object.keys(groups).sort((a,b)=>a.localeCompare(b,"tr")).forEach(subj=>{
       html += `<optgroup label="${escapeHtml(subj)}">`;
       groups[subj].forEach(it=>{
@@ -632,13 +665,15 @@
     const header = ["Gün", ...Array.from({length:perDay},(_,i)=>`${i+1}. Ders`)];
     // We'll inject per-cell selected via JS after insert (faster than rebuilding optgroups many times)
     let html = `<div class="plan"><table><thead><tr>${header.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>`;
-    actDays.forEach(dayIdx=>{
+    for(let dayIdx=0;dayIdx<7;dayIdx++){
+      const active = actDays.includes(dayIdx);
       html += `<tr><td><b>${escapeHtml(DAYS[dayIdx])}</b></td>`;
       for(let s=0;s<perDay;s++){
-        html += `<td><select data-k="shared" data-day="${dayIdx}" data-slot="${s}">${buildOptionsHtml(plan[dayIdx][s]||"")}</select></td>`;
+        const cur = (plan[dayIdx]||[])[s] || "";
+        html += `<td><select ${active?"":"disabled"} data-k="shared" data-day="${dayIdx}" data-slot="${s}">${buildOptionsHtml(cur)}</select></td>`;
       }
       html += `</tr>`;
-    });
+    }
     html += `</tbody></table></div>`;
     return html;
   }
@@ -739,7 +774,6 @@
   async function exportExcel(){
     const students = getSelectedStudents();
     if(students.length===0) return alert("Önce en az 1 öğrenci seç.");
-    if(selectedOut.size===0) return alert("En az 1 kazanım seç.");
 
     const perDay = parseInt(el("perDay").value,10);
     const actDays = getActiveDays();
@@ -747,6 +781,16 @@
     const dateText = getDateText();
     const teacherNote = (el("teacherNote").value || "").trim();
     const qPreset = (el("qPreset").value || "").trim();
+
+    // En az 1 slot dolu mu?
+    const planCheck = ensureSharedPlan();
+    let anyFilled = false;
+    actDays.forEach(d=>{
+      for(let s=0;s<perDay;s++){
+        if((planCheck[d]||[])[s]) { anyFilled = true; break; }
+      }
+    });
+    if(!anyFilled) return alert("Tabloda en az 1 ders veya kazanım seç.");
 
     // build quick byId map for selected grade
     const wb = new ExcelJS.Workbook();
@@ -856,6 +900,24 @@
           }
 
           const id = (plan[i]||[])[s] || "";
+
+          // Sadece ders seçimi (kazanımsız)
+          if(id && String(id).startsWith("SUBJ:")){
+            const subj = String(id).slice(5);
+            const meta = subjectMeta(subj);
+            const title = `${meta.emoji} ${meta.code} • ${subj}`.trim();
+            lessonCell.value = title;
+            fill(lessonCell, "FF"+meta.fill);
+            setFont(lessonCell, {bold:true, size:10, color:{argb:"FF111827"}});
+            left(lessonCell);
+
+            qCell.value = qPreset ? Number(qPreset) : "";
+            fill(qCell, "FFFFF7CC");
+            setFont(qCell, {bold:true, size:10, color:{argb:"FF111827"}});
+            center(qCell);
+            continue;
+          }
+
           const item = id ? byId.get(id) : null;
           if(!item){
             lessonCell.value = "";
