@@ -97,8 +97,7 @@
     textarea{min-height:80px;resize:vertical}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     @media(max-width:540px){.row{grid-template-columns:1fr}}
-    .days{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
-    @media(max-width:540px){.days{grid-template-columns:repeat(4,1fr)}}
+    .days{display:grid;grid-template-columns:repeat(auto-fit,minmax(56px,1fr));gap:8px}
     .day{
       display:flex;align-items:center;justify-content:center;gap:8px;
       border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff;
@@ -442,23 +441,55 @@
   //  STUDENTS: load & render multi-select
   // ------------------------------------------------------------
   function sectionsForGrade(grade){
-    const keys = Object.keys((STUDENTS && STUDENTS.classes) ? STUDENTS.classes : {});
-    const secs = keys
-      .filter(k => k.startsWith(grade+"::"))
-      .map(k => k.split("::")[1]);
-    return [...new Set(secs)].sort((a,b)=>a.localeCompare(b,"tr"));
+    const classes = (STUDENTS && STUDENTS.classes) ? STUDENTS.classes : {};
+    const keys = Object.keys(classes);
+    const secs = new Set();
+    keys.forEach(k=>{
+      // Supported formats:
+      // 1) "5-A" (preferred in your repo)
+      // 2) "5::A" (legacy)
+      if(k.includes("::")){
+        const [g,s] = k.split("::");
+        if(String(g)===String(grade)) secs.add(`${g}-${s}`);
+      }else if(k.includes("-")){
+        const g = k.split("-")[0];
+        if(String(g)===String(grade)) secs.add(k); // keep "5-A"
+      }
+    });
+    return Array.from(secs).sort((a,b)=>a.localeCompare(b,"tr"));
+  }
+
+  function classKeyFor(grade, section){
+    const classes = (STUDENTS && STUDENTS.classes) ? STUDENTS.classes : {};
+    // If section already like "5-A"
+    if(classes[section]) return section;
+    // If section like "A"
+    const dash = `${grade}-${section}`;
+    if(classes[dash]) return dash;
+    // Legacy "5::A"
+    const dbl = `${grade}::${section}`;
+    if(classes[dbl]) return dbl;
+    // If section like "5-A" but want legacy
+    if(section.includes("-")){
+      const s = section.split("-")[1];
+      const dbl2 = `${grade}::${s}`;
+      if(classes[dbl2]) return dbl2;
+    }
+    return null;
   }
 
   function getStudentsIn(grade, section){
-    const key = `${grade}::${section}`;
-    return (STUDENTS && STUDENTS.classes && STUDENTS.classes[key]) ? STUDENTS.classes[key] : [];
+    const key = classKeyFor(grade, section);
+    return key && STUDENTS && STUDENTS.classes && STUDENTS.classes[key] ? STUDENTS.classes[key] : [];
   }
 
   function fillSection(){
     const grade = el("grade").value;
     const secSel = el("section");
     const secs = sectionsForGrade(grade);
-    secSel.innerHTML = secs.map(s=>`<option value="${escapeHtml(s)}">${grade}-${escapeHtml(s)}</option>`).join("") || `<option value="">-</option>`;
+    secSel.innerHTML = secs.length
+      ? secs.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("")
+      : `<option value="">-</option>`;
   }
 
   function renderStudentList(){
@@ -482,7 +513,7 @@
         <input type="checkbox" class="stuChk" data-idx="${idx}">
         <div class="meta">
           <b>${escapeHtml(name || "-")}</b>
-          <span>${escapeHtml(grade)}-${escapeHtml(section)} • No: ${escapeHtml(num || "-")}</span>
+          <span>${escapeHtml(section.includes('-')?section:(grade+'-'+section))} • No: ${escapeHtml(num || "-")}</span>
         </div>
       `;
       box.appendChild(row);
