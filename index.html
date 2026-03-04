@@ -192,7 +192,7 @@
         <img src="logo.png" alt="Altınküre Ortaokulu" onerror="this.style.display='none'"/>
         <div class="t">
           <h1>Altınküre Ortaokulu • Manuel Program v2</h1>
-          <div class="sub">PDF yok • Excel var • Çoklu öğrenci seçimi • Sayfa uzamaz (accordion)</div>
+          <div class="sub">PDF yok • Excel var • Çoklu öğrenci seçimi • Sayfa uzamaz (tek tablo, çoklu öğrenci)</div>
         </div>
       </div>
       <div class="actions">
@@ -269,6 +269,11 @@
 
         <label>Aktif günler</label>
         <div class="days" id="days"></div>
+        <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <label style="margin:0;color:var(--muted);font-size:12px;display:flex;gap:8px;align-items:center">
+            <input type="checkbox" id="showSubject" checked style="width:auto"/> Tabloda ders adı da görünsün
+          </label>
+        </div>
 
         <div class="divider"></div>
 
@@ -365,7 +370,7 @@
   //  STATE
   // ------------------------------------------------------------
   let selectedOut = new Map(); // id -> {id,text,unit,subject,grade}
-  let planByStudent = new Map(); // studentKey -> { [dayIdx]: [ids...] }
+  let sharedPlan = {}; // dayIdx -> [ids...] (ortak tablo)
 
   function studentKey(st){ return `${st.grade}::${st.section}::${st.num}::${st.name}`; }
 
@@ -535,12 +540,10 @@
         if(ch.checked) selectedOut.set(item.id, item);
         else{
           selectedOut.delete(item.id);
-          // remove from all plans
-          for(const [k,plan] of planByStudent.entries()){
-            Object.keys(plan).forEach(day=>{
-              plan[day] = plan[day].map(v=> v===item.id ? "" : v);
-            });
-          }
+          // remove from shared plan
+          Object.keys(sharedPlan).forEach(day=>{
+            sharedPlan[day] = (sharedPlan[day]||[]).map(v=> v===item.id ? "" : v);
+          });
         }
         updateCounts();
         renderPreview();
@@ -553,24 +556,22 @@
   // ------------------------------------------------------------
   //  PLAN (per student)
   // ------------------------------------------------------------
-  function ensurePlanFor(st){
-    const key = studentKey(st);
+  function ensureSharedPlan(){
     const perDay = parseInt(el("perDay").value,10);
     const actDays = getActiveDays();
 
-    if(!planByStudent.has(key)) planByStudent.set(key, {});
-    const plan = planByStudent.get(key);
-
     actDays.forEach(i=>{
-      if(!plan[i] || plan[i].length !== perDay) plan[i] = Array(perDay).fill("");
+      if(!sharedPlan[i] || sharedPlan[i].length !== perDay) sharedPlan[i] = Array(perDay).fill("");
     });
-    Object.keys(plan).forEach(k=>{
-      if(!actDays.includes(parseInt(k,10))) delete plan[k];
+    Object.keys(sharedPlan).forEach(k=>{
+      if(!actDays.includes(parseInt(k,10))) delete sharedPlan[k];
     });
-    return plan;
+    return sharedPlan;
   }
 
+
   function buildOptionsHtml(current){
+    const showSubj = !!el("showSubject")?.checked;
     const items = Array.from(selectedOut.values());
     items.sort((a,b)=>
       (a.subject||"").localeCompare(b.subject||"tr") ||
@@ -587,7 +588,7 @@
     Object.keys(groups).sort((a,b)=>a.localeCompare(b,"tr")).forEach(subj=>{
       html += `<optgroup label="${escapeHtml(subj)}">`;
       groups[subj].forEach(it=>{
-        const label = `${it.unit ? it.unit+" — " : ""}${it.text}`;
+        const label = `${showSubj ? (it.subject+" • ") : ""}${it.unit ? it.unit+" — " : ""}${it.text}`;
         const sel = String(current)===String(it.id) ? "selected" : "";
         html += `<option value="${escapeHtml(it.id)}" ${sel}>${escapeHtml(label)}</option>`;
       });
@@ -608,19 +609,19 @@
 
     const students = getSelectedStudents();
     if(students.length===0) return alert("Önce en az 1 öğrenci seç.");
+    if(actDays.length===0) return alert("En az 1 gün seç.");
 
-    students.forEach(st=>{
-      const plan = ensurePlanFor(st);
-      let idx=0;
-      actDays.forEach(d=>{
-        for(let s=0;s<perDay;s++){
-          plan[d][s] = (idx < items.length) ? items[idx++].id : "";
-        }
-      });
+    const plan = ensureSharedPlan();
+    let idx=0;
+    actDays.forEach(d=>{
+      for(let s=0;s<perDay;s++){
+        plan[d][s] = (idx < items.length) ? items[idx++].id : "";
+      }
     });
 
     renderPreview();
   }
+
 
   // ------------------------------------------------------------
   //  PREVIEW (accordion, so page doesn't grow)
@@ -629,13 +630,12 @@
     const perDay = parseInt(el("perDay").value,10);
     const actDays = getActiveDays();
     const header = ["Gün", ...Array.from({length:perDay},(_,i)=>`${i+1}. Ders`)];
-    const optHtml = buildOptionsHtml(""); // template
     // We'll inject per-cell selected via JS after insert (faster than rebuilding optgroups many times)
     let html = `<div class="plan"><table><thead><tr>${header.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>`;
     actDays.forEach(dayIdx=>{
       html += `<tr><td><b>${escapeHtml(DAYS[dayIdx])}</b></td>`;
       for(let s=0;s<perDay;s++){
-        html += `<td><select data-k="${escapeHtml(studentKey(st))}" data-day="${dayIdx}" data-slot="${s}">${buildOptionsHtml(plan[dayIdx][s]||"")}</select></td>`;
+        html += `<td><select data-k="shared" data-day="${dayIdx}" data-slot="${s}">${buildOptionsHtml(plan[dayIdx][s]||"")}</select></td>`;
       }
       html += `</tr>`;
     });
@@ -649,45 +649,44 @@
     box.innerHTML = "";
 
     if(students.length===0){
-      box.innerHTML = `<div class="hint">Soldan öğrencileri seçince burada önizleme açılacak. Sayfa uzamaz; her öğrenci ayrı açılır/kapanır.</div>`;
+      box.innerHTML = `<div class="hint">Soldan öğrencileri seçince burada ortak program tablosu açılacak. Sayfa uzamaz.</div>`;
       updateCounts();
       return;
     }
 
-    students.forEach(st=>{
-      const plan = ensurePlanFor(st);
-      const det = document.createElement("details");
-      det.open = (students.length===1);
-      det.innerHTML = `
-        <summary>
-          <div class="sumLeft">
-            <div class="s1">${escapeHtml(st.name || "-")}</div>
-            <div class="s2">${escapeHtml(st.grade)}-${escapeHtml(st.section)} • No: ${escapeHtml(st.num||"-")}</div>
-          </div>
-          <div class="sumRight">Programı düzenle</div>
-        </summary>
-        <div class="panel">
-          ${renderPlanTableHtml(st, plan)}
-        </div>
-      `;
-      box.appendChild(det);
-    });
+    ensureSharedPlan();
 
-    // bind selects
+    const names = students.slice(0,12).map(s=>escapeHtml(s.name)).join(", ");
+    const more = students.length>12 ? ` (+${students.length-12})` : "";
+
+    const det = document.createElement("details");
+    det.open = true;
+    det.innerHTML = `
+      <summary>
+        <div class="sumLeft">
+          <div class="s1">Ortak Program Tablosu</div>
+          <div class="s2">${students.length} öğrenci seçili: ${names}${more}</div>
+        </div>
+        <div class="sumRight">Programı düzenle</div>
+      </summary>
+      <div class="panel">
+        ${renderPlanTableHtml({grade:el("grade").value, section:el("section").value, num:"", name:""}, sharedPlan)}
+      </div>
+    `;
+    box.appendChild(det);
+
     box.querySelectorAll("select").forEach(sel=>{
       sel.addEventListener("change", ()=>{
-        const k = sel.dataset.k;
         const day = parseInt(sel.dataset.day,10);
         const slot = parseInt(sel.dataset.slot,10);
-        const plan = planByStudent.get(k);
-        if(!plan) return;
-        if(!plan[day]) plan[day] = [];
-        plan[day][slot] = sel.value;
+        if(!sharedPlan[day]) sharedPlan[day] = [];
+        sharedPlan[day][slot] = sel.value;
       });
     });
 
     updateCounts();
   }
+
 
   // ------------------------------------------------------------
   //  COUNTS
@@ -828,7 +827,7 @@
         (gradeObj[subj]||[]).forEach(it=>byId.set(it.id, {subj, ...it}));
       });
 
-      const plan = ensurePlanFor(st);
+      const plan = ensureSharedPlan();
       const startRow = 5;
       for(let i=0;i<7;i++){
         const r = startRow+i;
@@ -946,15 +945,13 @@
 
     el("perDay").addEventListener("change", ()=>{
       // adjust all existing plans
-      const students = getSelectedStudents();
-      students.forEach(st=>ensurePlanFor(st));
+      ensureSharedPlan();
       updateCounts();
       renderPreview();
     });
 
     el("days").addEventListener("change", ()=>{
-      const students = getSelectedStudents();
-      students.forEach(st=>ensurePlanFor(st));
+      ensureSharedPlan();
       updateCounts();
       renderPreview();
     });
@@ -965,6 +962,11 @@
     });
     el("unit").addEventListener("change", renderOutcomeList);
     el("q").addEventListener("input", debounce(renderOutcomeList, 120));
+
+    el("showSubject").addEventListener("change", ()=>{
+      renderOutcomeList();
+      renderPreview();
+    });
 
     el("selAllStu").addEventListener("click", ()=>{
       el("studentList").querySelectorAll("input.stuChk").forEach(ch=> ch.checked = true);
@@ -989,7 +991,7 @@
     el("clrAllOut").addEventListener("click", ()=>{
       selectedOut.clear();
       // clear plans too
-      planByStudent.clear();
+      sharedPlan = {};
       renderOutcomeList();
       renderPreview();
     });
@@ -999,7 +1001,7 @@
     el("btnClear").addEventListener("click", ()=>{
       // only selections, don't touch loaded files
       selectedOut.clear();
-      planByStudent.clear();
+      sharedPlan = {};
       el("teacherNote").value = "";
       el("qPreset").value = "";
       el("studentList").querySelectorAll("input.stuChk").forEach(ch=> ch.checked = false);
