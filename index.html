@@ -7,33 +7,24 @@
   
   <style>
     :root{
-      --bg:#f6f7fb;
-      --card:#ffffff;
-      --muted:#6b7280;
-      --text:#14161a;
-      --line:#e7e9ee;
+  --bg:#f6f7fb;
+  --card:rgba(255,255,255,.92);
+  --muted:#6b7280;
+  --text:#14161a;
+  --line:#e7e9ee;
 
-      --gold1:#f3d37a;
-      --gold2:#c7a23a;
+  --gold1:#f3d37a;
+  --gold2:#c7a23a;
+  --blue1:#3a7cff;
+  --blue2:#245bd6;
 
-      --blue1:#3a7cff;
-      --blue2:#245bd6;
-
-      --radius:18px;
-      --shadow:0 18px 48px rgba(16,24,40,.10);
-    }
+  --shadow: 0 18px 48px rgba(16,24,40,.10);
+  --radius:18px;
+}
 
     *{box-sizing:border-box}
 
-    body{
-      margin:0;
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
-      background:
-        radial-gradient(1000px 420px at 50% 0%, rgba(199,162,58,.10), transparent 60%),
-        radial-gradient(900px 380px at 85% 35%, rgba(58,124,255,.08), transparent 60%),
-        var(--bg);
-      color:var(--text);
-    }
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background: radial-gradient(1000px 420px at 50% 0%, rgba(199,162,58,.10), transparent 60%),radial-gradient(900px 380px at 85% 35%, rgba(58,124,255,.09), transparent 60%),var(--bg);color:var(--text)}
 
     .wrap{max-width:1200px;margin:0 auto;padding:18px}
 
@@ -160,12 +151,27 @@
       letter-spacing:.6px
     }
 
-  </style>
+  .topbar{display:flex;gap:14px;align-items:center;margin:6px 0 14px;}
+.toplogo{width:160px;max-width:38vw;height:auto;filter: drop-shadow(0 12px 20px rgba(16,24,40,.10));}
+.subtitle{color:var(--muted);font-size:14px;margin-top:4px}
+@media (max-width:700px){
+  .topbar{flex-direction:column;align-items:flex-start}
+  .toplogo{width:180px}
+}
+
+</style>
 
 </head>
 <body>
   <div class="wrap">
-    <h1>Altınküre • Manuel Program (Ders / Kazanım Seçimli)</h1>
+    <div class="topbar">
+  <img class="toplogo" src="logo.png" alt="Altınküre Ortaokulu" onerror="this.style.display='none'"/>
+  <div>
+    <h1>Altınküre Ortaokulu • Manuel Program</h1>
+    <div class="subtitle">Ders veya kazanım seçerek haftalık çalışma programı oluştur (Excel ve toplu Excel ZIP).</div>
+  </div>
+</div>
+
     <div class="grid">
       <div class="card">
         <div class="row">
@@ -251,8 +257,7 @@
 
         <div style="margin-top:12px" class="toolbar">
           <button class="primary" id="downloadXlsx" type="button">Excel indir</button>
-          <button class="primary" id="downloadPdf" type="button">PDF indir</button>
-        </div>
+          </div>
 
         <hr style="border:0;border-top:1px solid var(--line);margin:12px 0">
 
@@ -264,7 +269,6 @@
           <button class="ghost" id="bulkNone" type="button">Temizle</button>
         </div>
         <div class="bulkBtns">
-          <button class="gold" id="bulkPdf" type="button">Seçili öğrenciler PDF (ZIP)</button>
           <button class="gold" id="bulkXlsx" type="button">Seçili öğrenciler Excel (ZIP)</button>
         </div>
 
@@ -300,9 +304,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 
   <script>
     const DAYS = ["Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi","Pazar"];
@@ -804,34 +806,6 @@
 
       return await wb.xlsx.writeBuffer();
     }
-
-    function buildPdfForStudent(st){
-      const perDay=parseInt(el("perDay").value,10);
-      const activeDays=getActiveDays();
-      ensurePlanShape();
-      const {jsPDF}=window.jspdf;
-      const doc=new jsPDF({orientation:"landscape",unit:"pt",format:"a4"});
-      doc.setFont("helvetica","bold"); doc.setFontSize(12);
-      doc.text("ALTINKÜRE ORTAOKULU",40,36);
-      doc.setFont("helvetica","normal"); doc.setFontSize(10);
-      const dateTxt=getDateText();
-      doc.text(`Öğrenci Bazlı Haftalık Çalışma Programı${dateTxt?(" | "+dateTxt):""} | ${st.classKey} • No: ${st.num||""} • ${st.name}`,40,56);
-
-      const head=[["Gün"]];
-      for(let i=0;i<perDay;i++){ head[0].push(`${i+1}. Ders`); head[0].push("Soru"); }
-      const body=[];
-      for(let i=0;i<DAYS.length;i++){
-        const row=[DAYS[i]];
-        const isActive=activeDays.includes(i);
-        for(let k=0;k<perDay;k++){
-          if(!isActive){ row.push(""); row.push(""); continue; }
-          const slot=plan[i][k]||{v:"",q:0};
-          const subj=resolveSlotSubject(slot.v||"");
-          const topic=resolveSlotText(slot.v||"");
-          const text=subj ? (topic?`${subjectLabel(subj)}\n${topic}`:subjectLabel(subj)) : "";
-          row.push(text);
-          row.push(String(Number(slot.q||0)||""));
-        }
         body.push(row);
       }
 
@@ -865,30 +839,25 @@
       const filename=`Program_${safeFileName(st.classKey)}_${safeFileName(st.num||"No")}_${safeFileName(st.name)}.xlsx`;
       saveAs(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}),filename);
     }
-    function downloadPdfSingle(){
-      const st=getSelectedStudentInfo();
-      if(!st) return alert("Önce öğrenci seç.");
-      const doc=buildPdfForStudent(st);
-      const filename=`Program_${safeFileName(st.classKey)}_${safeFileName(st.num||"No")}_${safeFileName(st.name)}.pdf`;
-      doc.save(filename);
-    }
 
-    async function bulkZip(kind){
-      const idxs=getBulkSelectedIndexes();
-      if(!idxs.length) return alert("Toplu program için en az 1 öğrenci seç.");
-      const zip=new JSZip();
-      const grade=el("grade").value, section=el("section").value;
+    
+async function bulkZip(){
+  const idxs=getBulkSelectedIndexes();
+  if(!idxs.length) return alert("Toplu program için en az 1 öğrenci seç.");
+  const zip=new JSZip();
+  const grade=el("grade").value, section=el("section").value;
 
-      for(const idx of idxs){
-        const st=getStudentInfoByIndex(idx);
-        if(!st?.name) continue;
-        if(kind==="xlsx"){
-          const buf=await exportExcelForStudent(st);
-          zip.file(`Program_${safeFileName(st.classKey)}_${safeFileName(st.num||"No")}_${safeFileName(st.name)}.xlsx`, buf);
-        } else {
-          const doc=buildPdfForStudent(st);
-          zip.file(`Program_${safeFileName(st.classKey)}_${safeFileName(st.num||"No")}_${safeFileName(st.name)}.pdf`, doc.output("arraybuffer"));
-        }
+  for(const idx of idxs){
+    const st=getStudentInfoByIndex(idx);
+    if(!st?.name) continue;
+    const buf=await exportExcelForStudent(st);
+    zip.file(`Program_${safeFileName(st.classKey)}_${safeFileName(st.num||"No")}_${safeFileName(st.name)}.xlsx`, buf);
+  }
+
+  const blob=await zip.generateAsync({type:"blob"});
+  saveAs(blob, `Programlar_${grade}-${section}_XLSX.zip`);
+}
+
       }
       const blob=await zip.generateAsync({type:"blob"});
       saveAs(blob, `Programlar_${grade}-${section}_${kind.toUpperCase()}.zip`);
@@ -924,13 +893,10 @@
       el("autoFill").addEventListener("click", autoFillSequential);
 
       el("downloadXlsx").addEventListener("click", downloadXlsxSingle);
-      el("downloadPdf").addEventListener("click", downloadPdfSingle);
-
-      el("bulkSearch").addEventListener("input", debounce(renderBulkList,120));
+el("bulkSearch").addEventListener("input", debounce(renderBulkList,120));
       el("bulkAll").addEventListener("click", ()=>{ el("bulkList").querySelectorAll("input.bulkChk").forEach(c=>c.checked=true); });
       el("bulkNone").addEventListener("click", ()=>{ el("bulkList").querySelectorAll("input.bulkChk").forEach(c=>c.checked=false); });
-      el("bulkPdf").addEventListener("click", ()=>bulkZip("pdf"));
-      el("bulkXlsx").addEventListener("click", ()=>bulkZip("xlsx"));
+el("bulkXlsx").addEventListener("click", bulkZip);
     }
 
     async function boot(){
@@ -950,4 +916,5 @@
   </script>
 </body>
 </html>
+
 
