@@ -916,7 +916,7 @@
     for(const st of students){
       const wsNameRaw = `${st.num}-${st.name}`.slice(0,31);
       const ws = wb.addWorksheet(wsNameRaw);
-      ws.pageSetup = { orientation:"landscape", fitToPage:true, fitToWidth:1, fitToHeight:1, horizontalCentered:true };
+      ws.pageSetup = { orientation:"landscape", paperSize: 9, fitToPage:true, fitToWidth:1, fitToHeight:1, horizontalCentered:true, verticalCentered:true };
 
       const lastColLetter = (perDay===3) ? "G" : "E";
       const lastColIdx = (perDay===3) ? 7 : 5;
@@ -945,14 +945,14 @@
       ws.mergeCells(`A1:${lastColLetter}1`);
       ws.getRow(1).height = 24;
       ws.getCell("A1").value = "ALTINKÜRE ORTAOKULU";
-      fill(ws.getCell("A1"), "FF0E2A47");
+      fill(ws.getCell("A1"), "FF1F3B5B");
       setFont(ws.getCell("A1"), {bold:true, color:{argb:"FFFFFFFF"}, size:13});
       left(ws.getCell("A1"));
 
       ws.mergeCells(`A2:${lastColLetter}2`);
       ws.getRow(2).height = 20;
       ws.getCell("A2").value = `Öğrenci Bazlı Haftalık Çalışma Programı | ${st.grade}-${st.section} • No: ${st.num||""} • ${st.name}`;
-      fill(ws.getCell("A2"), "FF0E2A47");
+      fill(ws.getCell("A2"), "FF1F3B5B");
       setFont(ws.getCell("A2"), {bold:true, color:{argb:"FFFFFFFF"}, size:10});
       left(ws.getCell("A2"));
 
@@ -973,7 +973,7 @@
       hdrs.forEach((h, i)=>{
         const cell = ws.getCell(hdrRow, i+1);
         cell.value = h;
-        fill(cell, "FF0E2A47");
+        fill(cell, "FF1F3B5B");
         setFont(cell, {bold:true, color:{argb:"FFFFFFFF"}, size:10});
         center(cell);
       });
@@ -985,7 +985,7 @@
 
         const dayCell = ws.getCell(r,1);
         dayCell.value = DAYS[day];
-        fill(dayCell, "FF0E2A47");
+        fill(dayCell, "FF203B57");
         setFont(dayCell, {bold:true, color:{argb:"FFFFFFFF"}, size:10});
         center(dayCell);
 
@@ -1024,7 +1024,7 @@
           left(lessonCell);
 
           qCell.value = cell.q ? Number(cell.q) : "";
-          fill(qCell, "FFFFF7CC");
+          fill(qCell, "FFF3ECD0");
           setFont(qCell, {bold:true, size:10, color:{argb:"FF111827"}});
           center(qCell);
         }
@@ -1033,12 +1033,14 @@
       const lastRow = startRow+6;
       borderAll(hdrRow, 1, lastRow, lastColIdx);
 
-      // auto width + wrap for safety
+      // auto width (based on longest visible line) + wrap
       ws.columns.forEach(col=>{
         let max = 10;
         col.eachCell({ includeEmpty: true }, cell=>{
-          const v = cell.value ? cell.value.toString() : "";
-          max = Math.max(max, Math.min(70, v.length));
+          const v = (cell.value ?? "").toString();
+          // Excel cells can have new lines; width should follow the longest line, not total length
+          const longestLine = v.split(/\r?\n/).reduce((m,s)=>Math.max(m, s.length), 0);
+          max = Math.max(max, Math.min(80, longestLine));
         });
         col.width = Math.max(col.width || 10, max + 2);
       });
