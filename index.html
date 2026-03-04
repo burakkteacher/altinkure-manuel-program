@@ -214,6 +214,7 @@
         <button class="btn ghost" id="btnClear">Temizle</button>
       </div>
     </div>
+    <div id="loadStatus" style="margin:10px 2px 0 2px;padding:10px 12px;border:1px solid #e5e7eb;border-radius:14px;background:#fff;color:#111827;font-weight:700;display:none"></div>
 
     <div class="grid">
       <!-- LEFT -->
@@ -368,7 +369,35 @@
   function escapeHtml(s){ return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;"); }
   function resolveRelUrl(rel){ return new URL(rel, window.location.href).toString(); }
   async function fetchFirstJson(cands){
-    const list = Array.isArray(cands) ? cands : [cands];
+    // cands: relative OR absolute strings
+    const list0 = Array.isArray(cands) ? cands : [cands];
+
+    // Build extra candidates that often fix GitHub Pages folder vs root issues
+    const root = window.location.origin + "/";
+    const extra = [];
+    for(const rel of list0){
+      if(!rel) continue;
+      // If already absolute, keep it
+      if(/^https?:\/\//i.test(rel)) continue;
+
+      // root absolute
+      extra.push(root + rel.replace(/^\.?\//,""));
+      // from current folder
+      extra.push("./" + rel.replace(/^\.?\//,""));
+      // one level up (common for /altinkure-manuel-program/ -> /)
+      extra.push("../" + rel.replace(/^\.?\//,""));
+    }
+
+    // de-duplicate while preserving order
+    const seen = new Set();
+    const list = [];
+    for(const x of [...list0, ...extra]){
+      const u = String(x);
+      if(seen.has(u)) continue;
+      seen.add(u);
+      list.push(u);
+    }
+
     let lastErr = null;
     for(const rel of list){
       try{
@@ -380,8 +409,19 @@
     throw lastErr || new Error("JSON fetch failed");
   }
 
+
   let STUDENTS = null;
   let OUTCOMES = null;
+
+  function setStatus(msg, isError=false){
+    const box = document.getElementById('loadStatus');
+    if(!box) return;
+    box.style.display = 'block';
+    box.style.borderColor = isError ? '#fecaca' : '#e5e7eb';
+    box.style.background = isError ? '#fff1f2' : '#ffffff';
+    box.style.color = isError ? '#991b1b' : '#111827';
+    box.textContent = msg;
+  }
 
   // ------------------------------------------------------------
   //  STATE
@@ -1184,10 +1224,38 @@ function exportExcel(){
   //  BOOT
   // ------------------------------------------------------------
   async function boot(){
+    // Always render base UI first
     initDays();
-    STUDENTS = await fetchFirstJson(["students.json","./students.json","../students.json","data/students.json","./data/students.json","students_simple_5-8.json","students_compat.json"]);
-    OUTCOMES = await fetchFirstJson(["kazanimlar.json","./kazanimlar.json","../kazanimlar.json","data/kazanimlar.json","./data/kazanimlar.json","kazanımlar.json","./kazanımlar.json","../kazanımlar.json"]);
+    setStatus("Veriler yükleniyor...");
 
+    // Load students (soft-fail)
+    try{
+      STUDENTS = await fetchFirstJson([
+        "students.json",
+        "data/students.json",
+        "students_compat.json",
+        "students_simple_5-8.json"
+      ]);
+    }catch(e){
+      console.error(e);
+      STUDENTS = { grades:{}, classes:{} };
+      setStatus("students.json bulunamadı. Dosya adı ve konumu kontrol: aynı klasör veya site kökü.", true);
+    }
+
+    // Load outcomes (soft-fail)
+    try{
+      OUTCOMES = await fetchFirstJson([
+        "kazanimlar.json",
+        "data/kazanimlar.json",
+        "kazanımlar.json"
+      ]);
+    }catch(e){
+      console.error(e);
+      OUTCOMES = [];
+      setStatus("kazanimlar.json bulunamadı. Dosya adı ve konumu kontrol: aynı klasör veya site kökü.", true);
+    }
+
+    // Render everything we can
     fillSection();
     renderStudentList();
     fillSubject();
@@ -1196,11 +1264,17 @@ function exportExcel(){
     renderOutcomeList();
     renderPreview();
     updateCounts();
+
+    // If both loaded, clear status
+    if((STUDENTS && Object.keys(STUDENTS.classes||{}).length) && (OUTCOMES && OUTCOMES.length)){
+      setStatus("Veriler yüklendi.");
+      setTimeout(()=>{ const b=document.getElementById('loadStatus'); if(b) b.style.display='none'; }, 1200);
+    }
   }
 
   boot().catch(err=>{
     console.error(err);
-    alert("Gerekli dosyalar yüklenemedi.\n\nKontrol: students.json ve kazanimlar.json repo kök dizininde olmalı.");
+    setStatus("Beklenmeyen hata: " + (err && err.message ? err.message : err), true);
   });
 </script>
 </body>
