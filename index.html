@@ -1062,9 +1062,15 @@
       h1.border = thickBorder();
       ws.getRow(1).height = 28;
 
-      // Row 2 split to avoid date clipping
-      ws.mergeCells("A2","K2");
-      ws.mergeCells("L2","N2");
+      // Row 2 split — dynamic for 2-lesson vs 3-lesson layout (prevents date clipping when J-M are hidden)
+      if(use3){
+        ws.mergeCells("A2","K2");
+        ws.mergeCells("L2","N2");
+      }else{
+        // When 3rd lesson columns (J-M) are hidden, don't merge into hidden columns
+        ws.mergeCells("A2","H2");
+        ws.mergeCells("I2","N2");
+      }
 
       const h2L = ws.getCell("A2");
       h2L.value = `${TITLE} | ${st.grade}-${st.section} • No: ${st.num||""} • ${st.name||""}`;
@@ -1073,7 +1079,7 @@
       h2L.alignment = {vertical:"middle", horizontal:"left", wrapText:true};
       h2L.border = thickBorder();
 
-      const h2R = ws.getCell("L2");
+      const h2R = ws.getCell(use3 ? "L2" : "I2");
       h2R.value = dateText ? `Tarih: ${dateText}` : "";
       h2R.font = {name:"Calibri", size:11, bold:true, color:{argb:"FF111827"}};
       h2R.fill = {type:"pattern", pattern:"solid", fgColor:{argb:"FFF2F2F2"}};
@@ -1085,7 +1091,7 @@
       if(logoId){
         try{
           ws.addImage(logoId, {
-            tl: { col: 11.2, row: 0.15 },
+            tl: { col: (use3 ? 11.2 : 8.8), row: 0.15 },
             ext: { width: 110, height: 40 }
           });
         }catch(_){}
@@ -1497,4 +1503,3 @@ ws.getRow(signRow).height = 24;
 </script>
 </body>
 </html>
-
