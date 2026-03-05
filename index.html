@@ -966,25 +966,25 @@
 
       // Columns (always A..J like analizindex.html)
       ws.columns = [
-        { key:"gun",   width: 14 },
+  { key:"gun",   width: 16 },
 
-        { key:"d1",    width: 34 },
-        { key:"s1",    width: 7  },
-        { key:"dogru1",width: 7  },
-        { key:"yanlis1",width: 7 },
+  { key:"d1",    width: 38 },
+  { key:"s1",    width: 8  },
+  { key:"dogru1",width: 10 },
+  { key:"yanlis1",width: 10 },
 
-        { key:"d2",    width: 34 },
-        { key:"s2",    width: 7  },
-        { key:"dogru2",width: 7  },
-        { key:"yanlis2",width: 7 },
+  { key:"d2",    width: 38 },
+  { key:"s2",    width: 8  },
+  { key:"dogru2",width: 10 },
+  { key:"yanlis2",width: 10 },
 
-        { key:"d3",    width: 34 },
-        { key:"s3",    width: 7  },
-        { key:"dogru3",width: 7  },
-        { key:"yanlis3",width: 7 },
+  { key:"d3",    width: 38 },
+  { key:"s3",    width: 8  },
+  { key:"dogru3",width: 10 },
+  { key:"yanlis3",width: 10 },
 
-        { key:"kitap", width: 9  },
-      ];
+  { key:"kitap", width: 11 },
+];
 
       // Hide 3rd lesson columns when perDay=2
       ws.getColumn(10).hidden = !use3;
@@ -1058,7 +1058,7 @@
         c.value = h.val;
         c.font = font({bold:true, color:{argb:"FF111827"}});
         c.fill = fillHex("#F2F2F2");
-        c.alignment = center();
+        c.alignment = { vertical:"middle", horizontal:"center", wrapText:false };
         c.border = thickBorder();
       }
 
@@ -1400,3 +1400,4 @@ ws.getRow(signRow).height = 24;
 </script>
 </body>
 </html>
+
