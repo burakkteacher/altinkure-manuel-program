@@ -966,48 +966,56 @@
 
       // Columns (always A..J like analizindex.html)
       ws.columns = [
-        { key:"gun", width: 14 },
-        { key:"d1",  width: 34 },
-        { key:"s1",  width: 7  },
-        { key:"c1",  width: 4  },
-        { key:"d2",  width: 34 },
-        { key:"s2",  width: 7  },
-        { key:"c2",  width: 4  },
-        { key:"d3",  width: 34 },
-        { key:"s3",  width: 7  },
-        { key:"c3",  width: 4  },
+        { key:"gun",   width: 14 },
+
+        { key:"d1",    width: 34 },
+        { key:"s1",    width: 7  },
+        { key:"dogru1",width: 7  },
+        { key:"yanlis1",width: 7 },
+
+        { key:"d2",    width: 34 },
+        { key:"s2",    width: 7  },
+        { key:"dogru2",width: 7  },
+        { key:"yanlis2",width: 7 },
+
+        { key:"d3",    width: 34 },
+        { key:"s3",    width: 7  },
+        { key:"dogru3",width: 7  },
+        { key:"yanlis3",width: 7 },
+
+        { key:"kitap", width: 9  },
       ];
 
       // Hide 3rd lesson columns when perDay=2
-      ws.getColumn(8).hidden  = !use3;
-      ws.getColumn(9).hidden  = !use3;
       ws.getColumn(10).hidden = !use3;
-
-      // Header row 1 (A1..G1 merged) — same as analiz
-      ws.mergeCells("A1","G1");
+      ws.getColumn(11).hidden = !use3;
+      ws.getColumn(12).hidden = !use3;
+      ws.getColumn(13).hidden = !use3;
+// Header row 1 (A1..G1 merged) — same as analiz
+      ws.mergeCells("A1","N1");
       const h1 = ws.getCell("A1");
       h1.value = "ALTINKÜRE ORTAOKULU";
-      h1.font = {name:"Calibri", size:16, bold:true, color:{argb:"FFFFFFFF"}};
-      h1.fill = {type:"pattern", pattern:"solid", fgColor:{argb:"FF0E2A47"}};
+      h1.font = {name:"Calibri", size:16, bold:true, color:{argb:"FF111827"}};
+      h1.fill = {type:"pattern", pattern:"solid", fgColor:{argb:"FFF2F2F2"}};
       h1.alignment = {vertical:"middle", horizontal:"left", wrapText:true};
       h1.border = thickBorder();
       ws.getRow(1).height = 28;
 
       // Row 2 split to avoid date clipping
-      ws.mergeCells("A2","E2");
-      ws.mergeCells("F2","J2");
+      ws.mergeCells("A2","K2");
+      ws.mergeCells("L2","N2");
 
       const h2L = ws.getCell("A2");
       h2L.value = `${TITLE} | ${st.grade}-${st.section} • No: ${st.num||""} • ${st.name||""}`;
-      h2L.font = {name:"Calibri", size:11, bold:true, color:{argb:"FFFFFFFF"}};
-      h2L.fill = {type:"pattern", pattern:"solid", fgColor:{argb:"FF0E2A47"}};
+      h2L.font = {name:"Calibri", size:11, bold:true, color:{argb:"FF111827"}};
+      h2L.fill = {type:"pattern", pattern:"solid", fgColor:{argb:"FFF2F2F2"}};
       h2L.alignment = {vertical:"middle", horizontal:"left", wrapText:true};
       h2L.border = thickBorder();
 
-      const h2R = ws.getCell("F2");
+      const h2R = ws.getCell("L2");
       h2R.value = dateText ? `Tarih: ${dateText}` : "";
-      h2R.font = {name:"Calibri", size:11, bold:true, color:{argb:"FFFFFFFF"}};
-      h2R.fill = {type:"pattern", pattern:"solid", fgColor:{argb:"FF0E2A47"}};
+      h2R.font = {name:"Calibri", size:11, bold:true, color:{argb:"FF111827"}};
+      h2R.fill = {type:"pattern", pattern:"solid", fgColor:{argb:"FFF2F2F2"}};
       h2R.alignment = {vertical:"middle", horizontal:"right", wrapText:true, shrinkToFit:true};
       h2R.border = thickBorder();
       ws.getRow(2).height = 24;
@@ -1016,7 +1024,7 @@
       if(logoId){
         try{
           ws.addImage(logoId, {
-            tl: { col: 7.6, row: 0.15 },
+            tl: { col: 11.2, row: 0.15 },
             ext: { width: 110, height: 40 }
           });
         }catch(_){}
@@ -1027,21 +1035,29 @@
       ws.getRow(startRow).height = 24;
       const headers = [
         {cell:"A", val:"Gün"},
+
         {cell:"B", val:"1. Ders"},
         {cell:"C", val:"Soru"},
-        {cell:"D", val:"☐"},
-        {cell:"E", val:"2. Ders"},
-        {cell:"F", val:"Soru"},
-        {cell:"G", val:"☐"},
-        {cell:"H", val:"3. Ders (ops.)"},
-        {cell:"I", val:"Soru"},
-        {cell:"J", val:"☐"},
+        {cell:"D", val:"Doğru"},
+        {cell:"E", val:"Yanlış"},
+
+        {cell:"F", val:"2. Ders"},
+        {cell:"G", val:"Soru"},
+        {cell:"H", val:"Doğru"},
+        {cell:"I", val:"Yanlış"},
+
+        {cell:"J", val:"3. Ders (ops.)"},
+        {cell:"K", val:"Soru"},
+        {cell:"L", val:"Doğru"},
+        {cell:"M", val:"Yanlış"},
+
+        {cell:"N", val:"Kitap (Sayfa)"},
       ];
       for(const h of headers){
         const c = ws.getCell(`${h.cell}${startRow}`);
         c.value = h.val;
         c.font = font({bold:true, color:{argb:"FF111827"}});
-        c.fill = fillHex("#DBEAFE");
+        c.fill = fillHex("#F2F2F2");
         c.alignment = center();
         c.border = thickBorder();
       }
@@ -1057,16 +1073,16 @@
         const dayCell = ws.getCell(`A${baseRow+day}`);
         dayCell.value = DAYS[day];
         dayCell.font = font({bold:true, color:{argb:"FF111827"}});
-        dayCell.fill = fillHex("#DBEAFE");
+        dayCell.fill = fillHex("#F2F2F2");
         dayCell.alignment = center();
         dayCell.border = thickBorder();
 
         const active = actDays.has(day);
 
         const slots = [
-          {slot:0, colD:"B", colS:"C", colC:"D"},
-          {slot:1, colD:"E", colS:"F", colC:"G"},
-          {slot:2, colD:"H", colS:"I", colC:"J"},
+          {slot:0, colD:"B", colS:"C", colDogru:"D", colYanlis:"E"},
+          {slot:1, colD:"F", colS:"G", colDogru:"H", colYanlis:"I"},
+          {slot:2, colD:"J", colS:"K", colDogru:"L", colYanlis:"M"},
         ];
 
         for(let s=0; s<slots.length; s++){
@@ -1075,26 +1091,34 @@
 
           const dCell = ws.getCell(`${sl.colD}${baseRow+day}`);
           const sCell = ws.getCell(`${sl.colS}${baseRow+day}`);
-          const cCell = ws.getCell(`${sl.colC}${baseRow+day}`);
+          const dogruCell = ws.getCell(`${sl.colDogru}${baseRow+day}`);
+          const yanlisCell = ws.getCell(`${sl.colYanlis}${baseRow+day}`);
 
           dCell.border = thickBorder();
           sCell.border = thickBorder();
-          cCell.border = thickBorder();
+          dogruCell.border = thickBorder();
+          yanlisCell.border = thickBorder();
 
           if(hidden){
-            dCell.value = null; sCell.value = null; cCell.value = null;
+            dCell.value = null; sCell.value = null; dogruCell.value = null; yanlisCell.value = null;
             continue;
           }
 
           if(!active){
             dCell.value = "";
             sCell.value = "";
-            cCell.value = "";
+            dogruCell.value = "";
+            yanlisCell.value = "";
+
             dCell.fill = fillHex("#F3F4F6");
             sCell.fill = fillHex("#F3F4F6");
+            dogruCell.fill = fillHex("#F3F4F6");
+            yanlisCell.fill = fillHex("#F3F4F6");
+
             dCell.alignment = leftWrap();
             sCell.alignment = center();
-            cCell.alignment = center();
+            dogruCell.alignment = center();
+            yanlisCell.alignment = center();
             continue;
           }
 
@@ -1108,27 +1132,39 @@
             const meta = subjectMeta(subject);
             const dersText = `${meta.emoji} ${meta.code} • ${subject}`.trim();
             const konuText = (isLessonOnly ? "" : (topic || ""));
-            dCell.value = konuText ? `${dersText}\n${konuText}` : dersText;
+            dCell.value = konuText ? `${dersText}
+${konuText}` : dersText;
             dCell.font = font({bold:true});
             dCell.fill = fillHex("#"+meta.fill);
           }
           dCell.alignment = leftWrap();
 
-          // Question
+          // Soru (siz dolduruyorsunuz)
           sCell.value = cell.q ? Number(cell.q) : "";
           sCell.fill = fillHex("#FFF7CC");
           sCell.font = font({bold:true});
           sCell.alignment = center();
 
-          // Checkbox
-          cCell.value = "";
-          cCell.alignment = center();
+          // Doğru / Yanlış (öğrenci dolduruyor)
+          dogruCell.value = "";
+          yanlisCell.value = "";
+          dogruCell.fill = fillHex("#FFFFFF");
+          yanlisCell.fill = fillHex("#FFFFFF");
+          dogruCell.alignment = center();
+          yanlisCell.alignment = center();
         }
+
+        // Kitap (günlük sayfa)
+        const kitapCell = ws.getCell(`N${baseRow+day}`);
+        kitapCell.border = thickBorder();
+        kitapCell.value = "";
+        kitapCell.fill = active ? fillHex("#EAF7EA") : fillHex("#F3F4F6");
+        kitapCell.alignment = center();
       }
 
       // Warning row (analiz style)
       const warnRowIdx = baseRow + 7 + 1;
-      ws.mergeCells(`B${warnRowIdx}`, `J${warnRowIdx}`);
+      ws.mergeCells(`B${warnRowIdx}`, `N${warnRowIdx}`);
 
       const warnLabel = ws.getCell(`A${warnRowIdx}`);
       warnLabel.value = "Uyarı:";
@@ -1146,30 +1182,23 @@
 
       // Signature row
       const signRow = warnRowIdx + 2;
-      ws.mergeCells(`A${signRow}`, `D${signRow}`);
-      ws.mergeCells(`E${signRow}`, `G${signRow}`);
+      ws.mergeCells(`A${signRow}`, `G${signRow}`);
+      ws.mergeCells(`H${signRow}`, `N${signRow}`);
 
       const s1 = ws.getCell(`A${signRow}`);
       s1.value = "Öğrenci İmza:";
       s1.font = font({ bold: true });
       s1.border = thickBorder();
 
-      const s2 = ws.getCell(`E${signRow}`);
+      const s2 = ws.getCell(`H${signRow}`);
       s2.value = "Veli İmza:";
       s2.font = font({ bold: true });
       s2.border = thickBorder();
-
-      if(use3){
-        ws.mergeCells(`H${signRow}`, `J${signRow}`);
-        const s3 = ws.getCell(`H${signRow}`);
-        s3.value = " ";
-        s3.border = thickBorder();
-      }
-      ws.getRow(signRow).height = 24;
+ws.getRow(signRow).height = 24;
 
       // NOT box (same placement logic as analiz)
-      const noteStartCol = use3 ? "H" : "E";
-      const noteEndCol   = use3 ? "J" : "G";
+      const noteStartCol = use3 ? "J" : "F";
+      const noteEndCol   = "N";
       const noteTop = signRow + 1;
       const noteMid = signRow + 2;
       const noteBottom = signRow + 3;
@@ -1198,7 +1227,7 @@
       // Optional teacher note (keeps manuel feature, but doesn't disturb the layout)
       if(teacherNote){
         const tnRow = noteBottom + 1;
-        ws.mergeCells(`A${tnRow}`, `J${tnRow}`);
+        ws.mergeCells(`A${tnRow}`, `N${tnRow}`);
         const tn = ws.getCell(`A${tnRow}`);
         tn.value = "Öğretmen Notu: " + teacherNote;
         tn.fill = fillHex("#EEF2FF");
