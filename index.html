@@ -240,7 +240,10 @@
             <label>Şube</label>
             <select id="section"></select>
           </div>
-        </div>
+
+        <label>Ayın Kitabı (sınıfa göre)</label>
+        <select id="bookMonth"></select>
+        <div class="hint">Sınıf seçimine göre books.json içinden listelenir. Seçmezsen Excel çıktısında görünmez.</div>
 
         <label>Öğrenciler (çoklu)</label>
         <div class="studentBox">
@@ -365,19 +368,55 @@
   function escapeHtml(s){ return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;"); }
   function resolveRelUrl(rel){ return new URL(rel, window.location.href).toString(); }
 
-  async function fetchFirstJson(cands){
-    const list = Array.isArray(cands) ? cands : [cands];
-    let lastErr = null;
-    for(const rel of list){
-      try{
-        const res = await fetch(resolveRelUrl(rel), { cache: "no-store" });
-        if(!res.ok) throw new Error(`${rel} fetch failed: ${res.status}`);
-        return await res.json();
-      }catch(e){ lastErr = e; }
-    }
-    throw lastErr || new Error("JSON fetch failed");
+  function withCacheBuster(url){
+    try{
+      const u = new URL(url);
+      // GitHub Pages / tarayıcı cache’ine takılmamak için
+      if(!u.searchParams.has("_ts")) u.searchParams.set("_ts", String(Date.now()));
+      return u.toString();
+    }catch(_){ return url; }
   }
 
+  function safeJsonParse(txt){
+    try{ return JSON.parse(txt); }catch(_){ return null; }
+  }
+
+  async function fetchFirstJson(cands, { cacheKey=null, silent=false } = {}){
+    const list = Array.isArray(cands) ? cands : [cands];
+    let lastErr = null;
+
+    // file:// protokolünde fetch bazı cihazlarda bloklanabiliyor.
+    const isFile = (window.location && window.location.protocol === "file:");
+    if(isFile && !silent){
+      console.warn("Dosya (file://) üzerinden açılmış: JSON fetch engellenebilir. GitHub Pages / Live Server önerilir.");
+    }
+
+    for(const rel of list){
+      try{
+        const abs = resolveRelUrl(rel);
+        const res = await fetch(withCacheBuster(abs), { cache: "no-store" });
+        if(!res.ok) throw new Error(`${rel} fetch failed: ${res.status}`);
+        const data = await res.json();
+        if(cacheKey){
+          try{ localStorage.setItem(cacheKey, JSON.stringify(data)); }catch(_){}
+        }
+        return data;
+      }catch(e){ lastErr = e; }
+    }
+
+    // Fallback: localStorage cache
+    if(cacheKey){
+      try{
+        const cached = localStorage.getItem(cacheKey);
+        if(cached){
+          const parsed = safeJsonParse(cached);
+          if(parsed) return parsed;
+        }
+      }catch(_){}
+    }
+
+    throw lastErr || new Error("JSON fetch failed");
+  }
   function showError(msg){
     const box = el("errorBox");
     box.style.display = "block";
@@ -386,6 +425,7 @@
 
   let STUDENTS = null;
   let OUTCOMES = null;
+  let BOOKS = null;
 
   // ------------------------------------------------------------
   //  STATE
@@ -476,6 +516,23 @@
     secSel.innerHTML = secs.length
       ? secs.map(s=>`<option value="${escapeHtml(s)}">${grade}-${escapeHtml(s)}</option>`).join("")
       : `<option value="">-</option>`;
+  }
+
+  function fillBookMonth(){
+    const sel = el("bookMonth");
+    if(!sel) return;
+    const grade = el("grade").value;
+    const arr = (BOOKS && (BOOKS[String(grade)] || BOOKS[grade])) ? (BOOKS[String(grade)] || BOOKS[grade]) : [];
+    const current = (sel.value || "");
+
+    // Liste yoksa (books.json okunamadı) kullanıcıya küçük bir ipucu göster.
+    if((!arr || !arr.length) && !BOOKS){
+      sel.innerHTML = `<option value="">(books.json bulunamadı)</option>`;
+      return;
+    }
+
+    sel.innerHTML = `<option value="">Seçiniz...</option>` + (arr||[]).map(b=>`<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join("");
+    if(current && (arr||[]).includes(current)) sel.value = current;
   }
 
   function renderStudentList(){
@@ -895,6 +952,8 @@
     if(students.length===0) return alert("Önce en az 1 öğrenci seç.");
     ensureSharedPlan();
 
+    if(!(window.ExcelJS && ExcelJS.Workbook)) return alert("ExcelJS yüklenemedi. İnternet bağlantısını veya sayfanın CDN erişimini kontrol et.");
+
     const perDay = parseInt(el("perDay").value,10);
     const use3 = (perDay === 3);
 
@@ -903,6 +962,7 @@
 
     const dateText = getDateText();
     const teacherNote = (el("teacherNote").value || "").trim();
+    const bookOfMonth = (el("bookMonth") ? (el("bookMonth").value || "").trim() : "");
 
     // build byId from OUTCOMES (for selected grade)
     const grade = el("grade").value;
@@ -1180,6 +1240,27 @@ ${konuText}` : dersText;
       warnCell.border = thickBorder();
       ws.getRow(warnRowIdx).height = 32;
 
+      // Ayın Kitabı (panelden seçilirse Excel sol altta görünsün; seçilmezse satır gizlenir)
+      const bookRow = warnRowIdx + 1;
+      if(bookOfMonth && String(bookOfMonth).trim()){
+        ws.mergeCells(`A${bookRow}`, `I${bookRow}`);
+        const bk = ws.getCell(`A${bookRow}`);
+        bk.value = `Ayın Kitabı: ${bookOfMonth}`;
+        bk.font = font({ bold:true, color:{argb:"FF111827"} });
+        bk.fill = fillHex("#EAF7EA");
+        bk.alignment = {vertical:"middle", horizontal:"left", wrapText:true};
+        // Border for merged region cells
+        for(const col of ["A","B","C","D","E","F","G","H","I"]){
+          const c = ws.getCell(`${col}${bookRow}`);
+          c.border = thickBorder();
+          c.fill = fillHex("#EAF7EA");
+        }
+        ws.getRow(bookRow).height = 20;
+      }else{
+        ws.getRow(bookRow).hidden = true;
+      }
+
+
       // Signature row
       const signRow = warnRowIdx + 2;
       ws.mergeCells(`A${signRow}`, `G${signRow}`);
@@ -1327,10 +1408,9 @@ ws.getRow(signRow).height = 24;
       });
     });
     el("clrAllOut").addEventListener("click", ()=>{
+      // SADECE kazanım seçimlerini temizle: tabloya (sharedPlan) dokunma
       selectedOut.clear();
-      sharedPlan = {};
       renderOutcomeList();
-      renderPlan();
       updateCounts();
     });
 
@@ -1341,6 +1421,7 @@ ws.getRow(signRow).height = 24;
       sharedPlan = {};
       el("teacherNote").value = "";
       el("qPreset").value = "";
+      if(el("bookMonth")) el("bookMonth").value = "";
       el("studentList").querySelectorAll("input.stuChk").forEach(ch=> ch.checked = false);
       renderOutcomeList();
       renderPlan();
@@ -1376,8 +1457,21 @@ ws.getRow(signRow).height = 24;
       throw e;
     }
 
+
+    // books.json (optional) — sınıf bazlı ayın kitabı listesi
+    const bookPaths = [
+      "books.json","./books.json","../books.json","/books.json","data/books.json","./data/books.json"
+    ];
+    try{
+      BOOKS = await fetchFirstJson(bookPaths, { cacheKey: "ALTINKURE_BOOKS_V1", silent:true });
+    }catch(e){
+      BOOKS = null; // books.json yoksa sistem çalışmaya devam etsin
+      // Kullanıcıya paniğe gerek yok: sistem çalışır, sadece kitap listesi gelmez.
+      console.warn("books.json yüklenemedi (liste gelmeyebilir):", e);
+    }
     pruneBanned();
     fillSection();
+    fillBookMonth();
     renderStudentList();
     fillSubject();
     fillUnit();
@@ -1394,3 +1488,4 @@ ws.getRow(signRow).height = 24;
 </script>
 </body>
 </html>
+
