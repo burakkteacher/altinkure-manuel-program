@@ -1044,7 +1044,7 @@
         { key:"dogru3", width: 10 },
         { key:"yanlis3",width: 10 },
 
-        { key:"kitap",  width: 11 },
+        { key:"kitap",  width: 15 },
       ];
 
       // Hide 3rd lesson columns when perDay=2
@@ -1244,12 +1244,18 @@ ${konuText}` : dersText;
       // Ayın Kitabı (panelden seçilirse Excel sol altta görünsün; seçilmezse satır gizlenir)
       const bookRow = warnRowIdx + 1;
       if(bookOfMonth && String(bookOfMonth).trim()){
+        ws.getRow(bookRow).height = 28;
         ws.mergeCells(`A${bookRow}`, `I${bookRow}`);
         const bk = ws.getCell(`A${bookRow}`);
-        bk.value = `Ayın Kitabı: ${bookOfMonth}`;
-        bk.font = font({ bold:true, color:{argb:"FF111827"} });
+        // Kutucuk: 📚 AYIN KİTABI büyük + seçilen kitap
+        bk.value = {
+          richText: [
+            { text: "📚 AYIN KİTABI: ", font: { name: "Arial", bold: true, size: 14, color: { argb: "FF111827" } } },
+            { text: String(bookOfMonth), font: { name: "Arial", bold: true, size: 12, color: { argb: "FF111827" } } }
+          ]
+        };
         bk.fill = fillHex("#EAF7EA");
-        bk.alignment = {vertical:"middle", horizontal:"left", wrapText:true};
+        bk.alignment = { vertical:"middle", horizontal:"left", wrapText:true, indent: 1 };
         // Border for merged region cells
         for(const col of ["A","B","C","D","E","F","G","H","I"]){
           const c = ws.getCell(`${col}${bookRow}`);
@@ -1491,3 +1497,4 @@ ws.getRow(signRow).height = 24;
 </script>
 </body>
 </html>
+
