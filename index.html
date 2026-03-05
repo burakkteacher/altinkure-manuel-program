@@ -1196,48 +1196,42 @@ ${konuText}` : dersText;
       s2.border = thickBorder();
 ws.getRow(signRow).height = 24;
 
-      // NOT box (same placement logic as analiz)
+      // Teacher note box (same placement logic as analiz)
       const noteStartCol = use3 ? "J" : "F";
       const noteEndCol   = "N";
       const noteTop = signRow + 1;
       const noteMid = signRow + 2;
       const noteBottom = signRow + 3;
 
-      ws.mergeCells(`${noteStartCol}${noteTop}`, `${noteEndCol}${noteTop}`);
-      ws.mergeCells(`${noteStartCol}${noteMid}`, `${noteEndCol}${noteBottom}`);
+      // Öğretmen not yazmazsa bu bölüm Excel'de hiç görünmesin
+      if(teacherNote && String(teacherNote).trim()){
+        ws.mergeCells(`${noteStartCol}${noteTop}`, `${noteEndCol}${noteTop}`);
+        ws.mergeCells(`${noteStartCol}${noteMid}`, `${noteEndCol}${noteBottom}`);
 
-      const noteTitle = ws.getCell(`${noteStartCol}${noteTop}`);
-      noteTitle.value = "NOT";
-      noteTitle.alignment = { vertical:"middle", horizontal:"center" };
-      noteTitle.font = font({ bold:true, color:{argb:"FF111827"} });
-      noteTitle.fill = fillHex("#BFDBFE");
-      noteTitle.border = thickBorder();
+        const noteTitle = ws.getCell(`${noteStartCol}${noteTop}`);
+        noteTitle.value = "ÖĞRETMEN NOTU";
+        noteTitle.alignment = { vertical:"middle", horizontal:"center" };
+        noteTitle.font = font({ bold:true, color:{argb:"FF111827"} });
+        noteTitle.fill = fillHex("#BFDBFE");
+        noteTitle.border = thickBorder();
 
-      const noteMsg = ws.getCell(`${noteStartCol}${noteMid}`);
-      noteMsg.value = "SINAVZA tarafından yapılan analizle, öncelikli konu listesine göre kişiye özel hazırlanmıştır.";
-      noteMsg.alignment = { vertical:"top", horizontal:"left", wrapText:true };
-      noteMsg.fill = fillHex("#F6F7FB");
-      noteMsg.border = thickBorder();
-      noteMsg.font = font({ size:10 });
+        const noteMsg = ws.getCell(`${noteStartCol}${noteMid}`);
+        noteMsg.value = teacherNote;
+        noteMsg.alignment = { vertical:"top", horizontal:"left", wrapText:true };
+        noteMsg.fill = fillHex("#F6F7FB");
+        noteMsg.border = thickBorder();
+        noteMsg.font = font({ size:10 });
 
-      ws.getRow(noteTop).height = 20;
-      ws.getRow(noteMid).height = 46;
-      ws.getRow(noteBottom).height = 10;
-
-      // Optional teacher note (keeps manuel feature, but doesn't disturb the layout)
-      if(teacherNote){
-        const tnRow = noteBottom + 1;
-        ws.mergeCells(`A${tnRow}`, `N${tnRow}`);
-        const tn = ws.getCell(`A${tnRow}`);
-        tn.value = "Öğretmen Notu: " + teacherNote;
-        tn.fill = fillHex("#EEF2FF");
-        tn.font = font({size:10});
-        tn.alignment = {vertical:"middle", horizontal:"left", wrapText:true};
-        tn.border = thickBorder();
-        ws.getRow(tnRow).height = 34;
+        ws.getRow(noteTop).height = 20;
+        ws.getRow(noteMid).height = 56;
+        ws.getRow(noteBottom).height = 10;
+      } else {
+        ws.getRow(noteTop).hidden = true;
+        ws.getRow(noteMid).hidden = true;
+        ws.getRow(noteBottom).hidden = true;
       }
 
-      // Print setup (analiz style)
+// Print setup (analiz style)
       ws.pageSetup = {
         paperSize: 9, // A4
         orientation: "landscape",
@@ -1400,4 +1394,3 @@ ws.getRow(signRow).height = 24;
 </script>
 </body>
 </html>
-
