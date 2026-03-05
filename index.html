@@ -240,6 +240,7 @@
             <label>Şube</label>
             <select id="section"></select>
           </div>
+        </div>
 
         <label>Ayın Kitabı (sınıfa göre)</label>
         <select id="bookMonth"></select>
@@ -1348,9 +1349,11 @@ ws.getRow(signRow).height = 24;
     });
 
     el("grade").addEventListener("change", ()=>{
+      // Sınıf değişince: şube + öğrenci + kazanımlar + kitap listesi tazelensin
       selectedOut.clear();
       sharedPlan = {};
       fillSection();
+      fillBookMonth(); // <-- sınıfa göre ayın kitabı listesi
       renderStudentList();
       fillSubject();
       fillUnit();
@@ -1488,4 +1491,3 @@ ws.getRow(signRow).height = 24;
 </script>
 </body>
 </html>
-
